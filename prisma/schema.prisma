@@ -58,3 +58,15 @@ model Product {
 
   @@index([storeId])
 }
+
+model Order {
+  id          String   @id @default(cuid())
+  storeId     String
+
+  customer    String
+  phone       String
+
+  total       Int
+
+  createdAt   DateTime @default(now())
+}
