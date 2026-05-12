@@ -1,43 +1,24 @@
-// import { prisma } from '@/lib/prisma'
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 interface Props {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }
 
 export default async function StorePage({ params }: Props) {
-  //   const store = await prisma.store.findUnique({
-  //     where: {
-  //       slug: params.slug,
-  //     },
-  //     include: {
-  //       products: true,
-  //     },
-  //   })
+  const { slug } = await params;
 
-  const store = {
-    name: "Toko Baju Online",
-    description: "Toko baju online dengan berbagai pilihan fashion terkini.",
-    phone: "6281234567890",
-    products: [
-      {
-        id: 1,
-        name: "Kaos Polos",
-        price: 50000,
-      },
-      {
-        id: 2,
-        name: "Kemeja Lengan Panjang",
-        price: 150000,
-      },
-      {
-        id: 3,
-        name: "Jaket Denim",
-        price: 250000,
-      },
-    ],
-  };
+  const store = await prisma.store.findUnique({
+    where: {
+      slug,
+    },
+    include: {
+      products: true,
+    },
+  });
 
   if (!store) {
     return <div>Toko tidak ditemukan</div>;
