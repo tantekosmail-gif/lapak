@@ -12,6 +12,7 @@ const nextConfig: NextConfig = {
           hostname: 'images.pexels.com',
         },
       ],
+      domains: ["fastly.picsum.photos", "picsum.photos"],
     },
 };
 
