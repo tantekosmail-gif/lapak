@@ -1,181 +1,75 @@
 "use client";
 
 import { Suspense, useState } from "react";
-import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
-import { useForm } from "react-hook-form";
-import { Eye, EyeOff } from "lucide-react";
 
-type SigninFormData = {
-  email: string;
-  password: string;
-};
+function GoogleIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      className="w-5 h-5"
+    >
+      <path
+        fill="#4285F4"
+        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+      />
+      <path
+        fill="#34A853"
+        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A10.99 10.99 0 0 0 12 23z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M5.84 14.1A6.6 6.6 0 0 1 5.48 12c0-.73.13-1.44.36-2.1V7.06H2.18A11 11 0 0 0 1 12c0 1.78.43 3.47 1.18 4.94l3.66-2.84z"
+      />
+      <path
+        fill="#EA4335"
+        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38z"
+      />
+    </svg>
+  );
+}
 
 function SignInForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const registered = searchParams.get("registered");
+  const errorParam = searchParams.get("error");
 
-  const [showPassword, setShowPassword] = useState(false);
-  const [serverError, setServerError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<SigninFormData>({
-    defaultValues: {
-      email: "",
-      password: "",
-    },
-  });
-
-  async function onSubmit(data: SigninFormData) {
-    setServerError("");
+  async function handleGoogleSignIn() {
     setIsLoading(true);
-
-    try {
-      const result = await signIn("credentials", {
-        email: data.email,
-        password: data.password,
-        redirect: false,
-      });
-
-      if (result?.error) {
-        setServerError("Email atau kata sandi salah");
-        return;
-      }
-
-      router.push("/dashboard");
-      router.refresh();
-    } catch {
-      setServerError("Terjadi kesalahan. Silakan coba lagi.");
-    } finally {
-      setIsLoading(false);
-    }
+    await signIn("google", { callbackUrl: "/dashboard" });
   }
 
   return (
     <div>
       <h2 className="text-2xl font-semibold text-ink mb-1">Masuk</h2>
       <p className="text-muted text-sm mb-8">
-        Selamat datang kembali! Masuk ke akun Anda.
+        Masuk atau daftar dengan akun Google Anda.
       </p>
 
-      {registered && (
-        <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-3 mb-6">
-          <p className="text-green-700 text-sm">
-            Akun berhasil dibuat! Silakan masuk.
+      {errorParam && (
+        <div className="bg-red-50 border border-error/20 rounded-lg px-4 py-3 mb-6">
+          <p className="text-error text-sm">
+            Gagal masuk dengan Google. Silakan coba lagi.
           </p>
         </div>
       )}
 
-      {serverError && (
-        <div className="bg-red-50 border border-error/20 rounded-lg px-4 py-3 mb-6">
-          <p className="text-error text-sm">{serverError}</p>
-        </div>
-      )}
+      <button
+        type="button"
+        onClick={handleGoogleSignIn}
+        disabled={isLoading}
+        className="w-full h-12 rounded-lg border border-hairline bg-canvas text-ink font-medium text-base flex items-center justify-center gap-3 transition-colors hover:bg-surface active:bg-surface disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+      >
+        <GoogleIcon />
+        <span>{isLoading ? "Memproses..." : "Lanjutkan dengan Google"}</span>
+      </button>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-        {/* Email */}
-        <div>
-          <label
-            htmlFor="email"
-            className="block text-xs font-medium text-muted mb-1.5 uppercase tracking-wide"
-          >
-            Email
-          </label>
-          <input
-            id="email"
-            type="email"
-            placeholder="nama@email.com"
-            {...register("email", {
-              required: "Email wajib diisi",
-              pattern: {
-                value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                message: "Email tidak valid",
-              },
-            })}
-            className="w-full h-14 px-3.5 rounded-lg border border-hairline bg-canvas text-ink text-base placeholder:text-muted-soft focus:outline-none focus:border-ink focus:border-2 focus:ring-0 transition-colors"
-          />
-          {errors.email && (
-            <p className="text-error text-xs mt-1.5">{errors.email.message}</p>
-          )}
-        </div>
-
-        {/* Password */}
-        <div>
-          <label
-            htmlFor="password"
-            className="block text-xs font-medium text-muted mb-1.5 uppercase tracking-wide"
-          >
-            Kata Sandi
-          </label>
-          <div className="relative">
-            <input
-              id="password"
-              type={showPassword ? "text" : "password"}
-              placeholder="Masukkan kata sandi"
-              {...register("password", {
-                required: "Kata sandi wajib diisi",
-                minLength: {
-                  value: 6,
-                  message: "Kata sandi minimal 6 karakter",
-                },
-              })}
-              className="w-full h-14 px-3.5 pr-12 rounded-lg border border-hairline bg-canvas text-ink text-base placeholder:text-muted-soft focus:outline-none focus:border-ink focus:border-2 focus:ring-0 transition-colors"
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-muted hover:text-ink transition-colors"
-              tabIndex={-1}
-            >
-              {showPassword ? (
-                <EyeOff className="w-5 h-5" />
-              ) : (
-                <Eye className="w-5 h-5" />
-              )}
-            </button>
-          </div>
-          {errors.password && (
-            <p className="text-error text-xs mt-1.5">
-              {errors.password.message}
-            </p>
-          )}
-        </div>
-
-        {/* Submit */}
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="w-full h-12 rounded-lg bg-primary text-on-primary font-medium text-base transition-colors hover:bg-primary-active active:bg-primary-active disabled:bg-primary-disabled disabled:cursor-not-allowed cursor-pointer"
-        >
-          {isLoading ? "Memproses..." : "Masuk"}
-        </button>
-      </form>
-
-      {/* Divider */}
-      <div className="relative my-8">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-hairline" />
-        </div>
-        <div className="relative flex justify-center text-xs">
-          <span className="bg-canvas px-4 text-muted">atau</span>
-        </div>
-      </div>
-
-      {/* Footer link */}
-      <p className="text-center text-sm text-muted">
-        Belum punya akun?{" "}
-        <Link
-          href="/signup"
-          className="text-ink font-medium underline underline-offset-2 hover:text-primary transition-colors"
-        >
-          Daftar di sini
-        </Link>
+      <p className="text-center text-xs text-muted mt-8">
+        Dengan masuk, Anda menyetujui Ketentuan Layanan dan Kebijakan Privasi
+        kami.
       </p>
     </div>
   );
