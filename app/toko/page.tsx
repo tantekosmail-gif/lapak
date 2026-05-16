@@ -11,9 +11,9 @@ import {
   Star,
   Heart,
 } from "lucide-react";
-import { StoreHeader } from "../../components/Header";
-import { Footer } from "../../components/Footer";
-import { useCart } from "../../lib/cart-context";
+import { StoreHeader } from "../components/Header";
+import { Footer } from "../components/Footer";
+import { useCart } from "../lib/cart-context";
 import { toast } from "sonner";
 
 function formatRupiah(value: number): string {
@@ -24,80 +24,118 @@ function formatRupiah(value: number): string {
   }).format(value);
 }
 
-const allProducts = [
+const categories = [
+  { id: "all", label: "Semua" },
+  { id: "batik-tulis", label: "Batik Tulis" },
+  { id: "batik-cap", label: "Batik Cap" },
+  { id: "batik-print", label: "Batik Print" },
+  { id: "aksesoris", label: "Aksesoris" },
+];
+
+const dummyProducts = [
   {
-    id: "prod-1", name: "Batik Tulis Solo Motif Parang Kusuma", slug: "batik-tulis-solo-parang-kusuma",
-    price: 450000, originalPrice: 550000,
+    id: "prod-1",
+    name: "Batik Tulis Solo Motif Parang Kusuma",
+    slug: "batik-tulis-solo-parang-kusuma",
+    price: 450000,
+    originalPrice: 550000,
     image: "https://images.pexels.com/photos/6044266/pexels-photo-6044266.jpeg?auto=compress&cs=tinysrgb&w=600",
-    category: "batik-tulis", rating: 4.8, sold: 230, stock: 15,
+    category: "batik-tulis",
+    rating: 4.8,
+    sold: 230,
+    stock: 15,
   },
   {
-    id: "prod-2", name: "Batik Cap Pekalongan Motif Mega Mendung", slug: "batik-cap-pekalongan-mega-mendung",
-    price: 285000, originalPrice: 320000,
+    id: "prod-2",
+    name: "Batik Cap Pekalongan Motif Mega Mendung",
+    slug: "batik-cap-pekalongan-mega-mendung",
+    price: 285000,
+    originalPrice: 320000,
     image: "https://images.pexels.com/photos/6044198/pexels-photo-6044198.jpeg?auto=compress&cs=tinysrgb&w=600",
-    category: "batik-cap", rating: 4.6, sold: 89, stock: 22,
+    category: "batik-cap",
+    rating: 4.6,
+    sold: 89,
+    stock: 22,
   },
   {
-    id: "prod-3", name: "Batik Tulis Yogyakarta Motif Kawung", slug: "batik-tulis-yogya-kawung",
+    id: "prod-3",
+    name: "Batik Tulis Yogyakarta Motif Kawung",
+    slug: "batik-tulis-yogya-kawung",
     price: 520000,
     image: "https://images.pexels.com/photos/6044268/pexels-photo-6044268.jpeg?auto=compress&cs=tinysrgb&w=600",
-    category: "batik-tulis", rating: 4.9, sold: 156, stock: 8,
+    category: "batik-tulis",
+    rating: 4.9,
+    sold: 156,
+    stock: 8,
   },
   {
-    id: "prod-4", name: "Batik Print Modern Motif Geometris", slug: "batik-print-modern-geometris",
+    id: "prod-4",
+    name: "Batik Print Modern Motif Geometris",
+    slug: "batik-print-modern-geometris",
     price: 150000,
     image: "https://images.pexels.com/photos/3738088/pexels-photo-3738088.jpeg?auto=compress&cs=tinysrgb&w=600",
-    category: "batik-print", rating: 4.3, sold: 312, stock: 45,
+    category: "batik-print",
+    rating: 4.3,
+    sold: 312,
+    stock: 45,
   },
   {
-    id: "prod-5", name: "Batik Tulis Madura Motif Pesisir", slug: "batik-tulis-madura-pesisir",
-    price: 380000, originalPrice: 420000,
+    id: "prod-5",
+    name: "Batik Tulis Madura Motif Pesisir",
+    slug: "batik-tulis-madura-pesisir",
+    price: 380000,
+    originalPrice: 420000,
     image: "https://images.pexels.com/photos/6044266/pexels-photo-6044266.jpeg?auto=compress&cs=tinysrgb&w=600",
-    category: "batik-tulis", rating: 4.7, sold: 67, stock: 12,
+    category: "batik-tulis",
+    rating: 4.7,
+    sold: 67,
+    stock: 12,
   },
   {
-    id: "prod-6", name: "Gelang Batik Kayu Jati", slug: "gelang-batik-kayu-jati",
+    id: "prod-6",
+    name: "Gelang Batik Kayu Jati",
+    slug: "gelang-batik-kayu-jati",
     price: 75000,
     image: "https://images.pexels.com/photos/6044198/pexels-photo-6044198.jpeg?auto=compress&cs=tinysrgb&w=600",
-    category: "aksesoris", rating: 4.5, sold: 198, stock: 50,
+    category: "aksesoris",
+    rating: 4.5,
+    sold: 198,
+    stock: 50,
   },
   {
-    id: "prod-7", name: "Batik Cap Solo Motif Sogan", slug: "batik-cap-solo-motif-sogan",
+    id: "prod-7",
+    name: "Batik Cap Solo Motif Sogan",
+    slug: "batik-cap-solo-motif-sogan",
     price: 310000,
     image: "https://images.pexels.com/photos/6044268/pexels-photo-6044268.jpeg?auto=compress&cs=tinysrgb&w=600",
-    category: "batik-cap", rating: 4.8, sold: 112, stock: 18,
+    category: "batik-cap",
+    rating: 4.8,
+    sold: 112,
+    stock: 18,
   },
   {
-    id: "prod-8", name: "Broshi Batik Tie Dye", slug: "broshi-batik-tie-dye",
+    id: "prod-8",
+    name: "Broshi Batik Tie Dye",
+    slug: "broshi-batik-tie-dye",
     price: 45000,
     image: "https://images.pexels.com/photos/3738088/pexels-photo-3738088.jpeg?auto=compress&cs=tinysrgb&w=600",
-    category: "aksesoris", rating: 4.4, sold: 276, stock: 80,
+    category: "aksesoris",
+    rating: 4.4,
+    sold: 276,
+    stock: 80,
   },
 ];
 
-const categoryNames: Record<string, string> = {
-  "batik-tulis": "Batik Tulis",
-  "batik-cap": "Batik Cap",
-  "batik-print": "Batik Print",
-  "aksesoris": "Aksesoris",
-  "pakaian": "Pakaian",
-  "souvenir": "Souvenir",
-};
-
-export default function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
+export default function TokoPage() {
+  const [activeCategory, setActiveCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("popular");
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [wishlisted, setWishlisted] = useState<Set<string>>(new Set());
   const { addItem } = useCart();
 
-  // For Next.js 16, params is a Promise — we'll use a simple approach
-  // In real app, use React.use() to unwrap params
-  const slug = "batik-tulis"; // default for static UI
-  const categoryName = categoryNames[slug] || slug;
-
-  const filteredProducts = allProducts
-    .filter((p) => p.category === slug)
+  const filteredProducts = dummyProducts
+    .filter((p) => activeCategory === "all" || p.category === activeCategory)
     .filter((p) => p.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
   const sortedProducts = [...filteredProducts].sort((a, b) => {
@@ -118,7 +156,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
     });
   };
 
-  const handleAddToCart = (product: typeof allProducts[0]) => {
+  const handleAddToCart = (product: typeof dummyProducts[0]) => {
     addItem({
       productId: product.id,
       name: product.name,
@@ -146,30 +184,43 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
         <nav className="mb-6 text-sm text-muted">
           <Link href="/" className="hover:text-ink transition-colors">Beranda</Link>
           <span className="mx-2">/</span>
-          <Link href="/toko" className="hover:text-ink transition-colors">Katalog</Link>
-          <span className="mx-2">/</span>
-          <span className="text-ink font-medium">{categoryName}</span>
+          <span className="text-ink font-medium">Katalog Produk</span>
         </nav>
 
-        <h1 className="text-[22px] font-semibold text-ink mb-2">{categoryName}</h1>
-        <p className="text-sm text-muted mb-6">
-          Menampilkan produk dalam kategori {categoryName}
-        </p>
+        <h1 className="text-[22px] font-semibold text-ink mb-2">Katalog Produk</h1>
+        <p className="text-sm text-muted mb-6">Semua produk yang tersedia di toko</p>
 
         {/* Search */}
         <div className="relative mb-4">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-soft" />
           <input
             type="text"
-            placeholder="Cari dalam kategori ini..."
+            placeholder="Cari produk..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full h-12 pl-11 pr-4 rounded-lg border border-hairline bg-canvas text-ink text-sm placeholder:text-muted-soft focus:outline-none focus:border-ink focus:border-2 transition-colors"
           />
         </div>
 
-        {/* Sort + count */}
-        <div className="flex items-center justify-between">
+        {/* Category pills */}
+        <div className="flex gap-2 overflow-x-auto pb-2 -mb-1 scrollbar-none">
+          {categories.map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => setActiveCategory(cat.id)}
+              className={`shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                activeCategory === cat.id
+                  ? "bg-ink text-canvas"
+                  : "bg-surface-soft text-body-text hover:bg-surface-strong"
+              }`}
+            >
+              {cat.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Sort + result count */}
+        <div className="flex items-center justify-between mt-4">
           <p className="text-sm text-muted">{sortedProducts.length} produk</p>
           <div className="relative">
             <button
@@ -207,7 +258,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
             <div className="py-20 text-center">
               <ShoppingBag className="mx-auto h-12 w-12 text-hairline" />
               <p className="mt-4 text-base font-medium text-ink">Produk tidak ditemukan</p>
-              <p className="mt-1 text-sm text-muted">Coba ubah kata kunci pencarian.</p>
+              <p className="mt-1 text-sm text-muted">Coba ubah kata kunci atau kategori pencarian.</p>
             </div>
           ) : (
             <div className="grid gap-4 grid-cols-2 sm:gap-5 lg:grid-cols-4">
@@ -215,6 +266,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                 const discount = product.originalPrice
                   ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
                   : 0;
+
                 return (
                   <div
                     key={product.id}
@@ -228,16 +280,27 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                       >
                         <Heart className={`h-4 w-4 ${wishlisted.has(product.id) ? "fill-primary text-primary" : "text-ink"}`} />
                       </button>
+
                       {discount > 0 && (
                         <span className="absolute top-3 left-3 z-10 rounded-full bg-primary px-2.5 py-0.5 text-[11px] font-semibold text-on-primary">
                           -{discount}%
                         </span>
                       )}
+
                       <div className="relative aspect-[4/3] bg-surface-soft overflow-hidden">
-                        <Image src={product.image} alt={product.name} fill sizes="(max-width: 640px) 50vw, 25vw" className="object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <Image
+                          src={product.image}
+                          alt={product.name}
+                          fill
+                          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                          className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
                       </div>
+
                       <div className="p-4">
-                        <h3 className="text-sm font-medium text-ink line-clamp-2 leading-snug min-h-[2.5rem]">{product.name}</h3>
+                        <h3 className="text-sm font-medium text-ink line-clamp-2 leading-snug min-h-[2.5rem]">
+                          {product.name}
+                        </h3>
                         <div className="mt-2 flex items-center gap-1.5 text-xs text-muted">
                           <Star className="h-3 w-3 fill-primary text-primary" />
                           <span className="font-medium text-ink">{product.rating}</span>
@@ -245,13 +308,28 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                           <span>{product.sold} terjual</span>
                         </div>
                         <div className="mt-2.5 flex items-baseline gap-2">
-                          <span className="text-[15px] font-semibold text-ink">{formatRupiah(product.price)}</span>
-                          {product.originalPrice && <span className="text-xs text-muted line-through">{formatRupiah(product.originalPrice)}</span>}
+                          <span className="text-[15px] font-semibold text-ink">
+                            {formatRupiah(product.price)}
+                          </span>
+                          {product.originalPrice && (
+                            <span className="text-xs text-muted line-through">
+                              {formatRupiah(product.originalPrice)}
+                            </span>
+                          )}
                         </div>
+                        {product.stock <= 10 && product.stock > 0 && (
+                          <p className="mt-2 text-[11px] font-medium text-primary">
+                            Sisa {product.stock} stok!
+                          </p>
+                        )}
                       </div>
                     </Link>
+
                     <div className="px-4 pb-4">
-                      <button onClick={() => handleAddToCart(product)} className="w-full rounded-lg border border-hairline py-2 text-xs font-medium text-ink hover:bg-surface-soft hover:border-ink transition-colors">
+                      <button
+                        onClick={() => handleAddToCart(product)}
+                        className="w-full rounded-lg border border-hairline py-2 text-xs font-medium text-ink hover:bg-surface-soft hover:border-ink transition-colors"
+                      >
                         + Keranjang
                       </button>
                     </div>
