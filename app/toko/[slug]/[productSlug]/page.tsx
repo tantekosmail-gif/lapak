@@ -5,22 +5,18 @@ import Link from "next/link";
 import Image from "next/image";
 import {
   ArrowLeft,
-  Package,
-  ShoppingCart,
-  Truck,
-  Shield,
-  Star,
+  ChevronRight,
+  Heart,
   Minus,
   Plus,
-  Share2,
-  Heart,
-  ChevronRight,
   MessageCircle,
+  Truck,
+  Shield,
   Clock,
   Store,
 } from "lucide-react";
 
-// ─── Dummy Data ──────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────
 
 function formatRupiah(value: number): string {
   return new Intl.NumberFormat("id-ID", {
@@ -29,6 +25,8 @@ function formatRupiah(value: number): string {
     minimumFractionDigits: 0,
   }).format(value);
 }
+
+// ─── Dummy Data ───────────────────────────────────────────
 
 interface ProductImage {
   id: string;
@@ -52,7 +50,7 @@ interface Product {
   tags: string[];
 }
 
-interface Store {
+interface StoreInfo {
   id: string;
   name: string;
   slug: string;
@@ -62,7 +60,7 @@ interface Store {
   address: string;
 }
 
-const dummyStore: Store = {
+const dummyStore: StoreInfo = {
   id: "store-1",
   name: "Toko Batik Nusantara",
   slug: "toko-batik-nusantara",
@@ -84,7 +82,7 @@ Cocok untuk:
 • Bahan pakaian formal dan semi-formal
 • Koleksi batik premium
 • Hadiah souvenir berkualitas
-• Dekorasi interiorr
+• Dekorasi interior
 
 Perawatan:
 • Cuci dengan tangan menggunakan detergen lembut
@@ -162,7 +160,7 @@ const relatedProducts = [
   },
 ];
 
-// ─── Component ───────────────────────────────────────────────
+// ─── Component ────────────────────────────────────────────
 
 export default function ProductDetailPage() {
   const [selectedImage, setSelectedImage] = useState(0);
@@ -173,299 +171,285 @@ export default function ProductDetailPage() {
   const store = dummyStore;
 
   const discount = product.originalPrice
-    ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+    ? Math.round(
+        ((product.originalPrice - product.price) / product.originalPrice) * 100
+      )
     : 0;
 
   const waMessage = `Halo, saya tertarik dengan produk *${product.name}* seharga ${formatRupiah(product.price)} (${quantity} pcs). Apakah masih tersedia?`;
   const waLink = `https://wa.me/${store.phone}?text=${encodeURIComponent(waMessage)}`;
 
   return (
-    <main className="min-h-screen bg-gray-50 dark:bg-gray-950">
+    <main className="min-h-screen bg-canvas">
       {/* ─── Top Bar ─── */}
-      <header className="sticky top-0 z-30 border-b border-gray-200 dark:border-gray-800 bg-white/90 dark:bg-gray-950/90 backdrop-blur-lg">
-        <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3 sm:px-6">
+      <header className="sticky top-0 z-30 border-b border-hairline bg-canvas/95 backdrop-blur-sm">
+        <div className="mx-auto flex h-16 max-w-[1080px] items-center gap-3 px-4 sm:px-6">
           <Link
             href={`/toko/${store.slug}`}
-            className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors shrink-0"
+            className="flex items-center gap-1.5 text-sm text-muted hover:text-ink transition-colors shrink-0"
           >
             <ArrowLeft className="h-4 w-4" />
             <span className="hidden sm:inline">Kembali ke toko</span>
             <span className="sm:hidden">Kembali</span>
           </Link>
 
-          <ChevronRight className="h-3.5 w-3.5 text-gray-300 dark:text-gray-700 shrink-0" />
+          <ChevronRight className="h-3.5 w-3.5 text-hairline shrink-0" />
 
-          <span className="text-sm text-gray-400 dark:text-gray-500 truncate">
+          <span className="text-sm text-muted-soft truncate">
             {product.category}
           </span>
 
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ml-auto flex items-center gap-1">
             <button
               onClick={() => setIsWishlisted(!isWishlisted)}
-              className="rounded-full p-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className="rounded-full p-2 hover:bg-surface-soft transition-colors"
               aria-label="Tambah ke wishlist"
             >
               <Heart
                 className={`h-5 w-5 transition-colors ${
                   isWishlisted
-                    ? "fill-red-500 text-red-500"
-                    : "text-gray-400 dark:text-gray-500"
+                    ? "fill-primary text-primary"
+                    : "text-muted-soft"
                 }`}
               />
-            </button>
-            <button
-              className="rounded-full p-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-              aria-label="Bagikan produk"
-            >
-              <Share2 className="h-5 w-5 text-gray-400 dark:text-gray-500" />
             </button>
           </div>
         </div>
       </header>
 
-      <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
-        <div className="grid gap-8 lg:grid-cols-2 lg:gap-12">
-          {/* ─── Galeri Gambar ─── */}
-          <div className="space-y-3">
-            {/* Gambar Utama */}
-            <div className="relative aspect-square overflow-hidden rounded-2xl bg-white dark:bg-gray-900 ring-1 ring-gray-200 dark:ring-gray-800">
-              <Image
-                src={product.images[selectedImage].url}
-                alt={product.images[selectedImage].alt}
-                fill
-                sizes="(max-width: 1024px) 100vw, 50vw"
-                className="object-cover"
-                priority
-              />
-              {discount > 0 && (
-                <span className="absolute top-4 left-4 rounded-full bg-red-500 px-3 py-1 text-xs font-bold text-white shadow-lg">
-                  -{discount}%
-                </span>
-              )}
-            </div>
-
-            {/* Thumbnail */}
-            <div className="flex gap-2 overflow-x-auto pb-1">
-              {product.images.map((img, i) => (
-                <button
-                  key={img.id}
-                  onClick={() => setSelectedImage(i)}
-                  className={`relative h-16 w-16 shrink-0 overflow-hidden rounded-xl ring-2 transition-all sm:h-20 sm:w-20 ${
-                    selectedImage === i
-                      ? "ring-green-500 dark:ring-green-400 scale-105"
-                      : "ring-gray-200 dark:ring-gray-700 hover:ring-gray-400 dark:hover:ring-gray-500"
-                  }`}
-                >
-                  <Image
-                    src={img.url}
-                    alt={img.alt}
-                    fill
-                    sizes="80px"
-                    className="object-cover"
-                  />
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* ─── Info Produk ─── */}
-          <div className="flex flex-col">
-            <div className="space-y-5">
-              {/* Kategori & Rating */}
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="rounded-full bg-green-100 dark:bg-green-900/30 px-3 py-1 text-xs font-medium text-green-700 dark:text-green-400">
-                  {product.category}
-                </span>
-                <div className="flex items-center gap-1">
-                  <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {product.rating}
-                  </span>
-                  <span className="text-sm text-gray-400 dark:text-gray-500">
-                    ({product.reviewCount} ulasan)
-                  </span>
-                </div>
-                <span className="text-sm text-gray-400 dark:text-gray-500">
-                  • {product.sold} terjual
-                </span>
-              </div>
-
-              {/* Nama Produk */}
-              <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-3xl leading-tight">
-                {product.name}
-              </h1>
-
-              {/* Harga */}
-              <div className="flex items-end gap-3 flex-wrap">
-                <p className="text-3xl font-bold text-green-600 dark:text-green-400">
-                  {formatRupiah(product.price)}
-                </p>
-                {product.originalPrice && (
-                  <span className="mb-1 text-lg text-gray-400 line-through">
-                    {formatRupiah(product.originalPrice)}
+      {/* ─── Content ─── */}
+      <div className="mx-auto max-w-[1080px] px-4 py-8 sm:px-6 sm:py-10">
+        <div className="grid gap-10 lg:grid-cols-[1fr_380px] lg:gap-14">
+          {/* ─── Left Column: Image Gallery + Description ─── */}
+          <div className="space-y-10">
+            {/* Image Gallery */}
+            <div className="space-y-3">
+              {/* Main Image */}
+              <div className="relative aspect-square overflow-hidden rounded-lg bg-surface-soft border border-hairline">
+                <Image
+                  src={product.images[selectedImage].url}
+                  alt={product.images[selectedImage].alt}
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 60vw"
+                  className="object-cover"
+                  priority
+                />
+                {discount > 0 && (
+                  <span className="absolute top-4 left-4 rounded-full bg-primary px-3 py-1 text-[11px] font-semibold text-on-primary shadow-[0_0_0_1px_rgba(0,0,0,0.02),0_2px_6px_rgba(0,0,0,0.04),0_4px_8px_rgba(0,0,0,0.1)]">
+                    -{discount}%
                   </span>
                 )}
               </div>
 
-              {/* Stok */}
-              <div className="flex items-center gap-2">
-                <span
-                  className={`inline-block h-2.5 w-2.5 rounded-full ${
-                    product.stock > 0
-                      ? "bg-green-500"
-                      : "bg-red-500"
-                  }`}
-                />
-                <span className="text-sm text-gray-600 dark:text-gray-400">
-                  {product.stock > 0
-                    ? `Stok tersedia (${product.stock})`
-                    : "Stok habis"}
-                </span>
-              </div>
-
-              {/* Divider */}
-              <hr className="border-gray-200 dark:border-gray-800" />
-
-              {/* Quantity Picker */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Jumlah
-                </label>
-                <div className="inline-flex items-center rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+              {/* Thumbnails */}
+              <div className="flex gap-2 overflow-x-auto pb-1">
+                {product.images.map((img, i) => (
                   <button
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="flex h-10 w-10 items-center justify-center text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors disabled:opacity-30"
-                    disabled={quantity <= 1}
+                    key={img.id}
+                    onClick={() => setSelectedImage(i)}
+                    className={`relative h-16 w-16 shrink-0 overflow-hidden rounded-lg border-2 transition-all sm:h-20 sm:w-20 ${
+                      selectedImage === i
+                        ? "border-ink"
+                        : "border-hairline hover:border-border-strong"
+                    }`}
                   >
-                    <Minus className="h-4 w-4" />
+                    <Image
+                      src={img.url}
+                      alt={img.alt}
+                      fill
+                      sizes="80px"
+                      className="object-cover"
+                    />
                   </button>
-                  <span className="flex h-10 w-12 items-center justify-center text-sm font-semibold text-gray-900 dark:text-white border-x border-gray-200 dark:border-gray-700">
-                    {quantity}
-                  </span>
-                  <button
-                    onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
-                    className="flex h-10 w-10 items-center justify-center text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors disabled:opacity-30"
-                    disabled={quantity >= product.stock}
-                  >
-                    <Plus className="h-4 w-4" />
-                  </button>
-                </div>
-                <p className="text-xs text-gray-400 dark:text-gray-500">
-                  Subtotal:{" "}
-                  <span className="font-semibold text-gray-700 dark:text-gray-300">
-                    {formatRupiah(product.price * quantity)}
-                  </span>
-                </p>
-              </div>
-
-              {/* Info Badges */}
-              <div className="grid grid-cols-3 gap-2">
-                <div className="flex flex-col items-center gap-1.5 rounded-xl bg-white dark:bg-gray-900 px-3 py-3 ring-1 ring-gray-200 dark:ring-gray-800">
-                  <Truck className="h-5 w-5 text-green-500" />
-                  <span className="text-[11px] text-center text-gray-600 dark:text-gray-400 leading-tight">
-                    Siap dikirim
-                  </span>
-                </div>
-                <div className="flex flex-col items-center gap-1.5 rounded-xl bg-white dark:bg-gray-900 px-3 py-3 ring-1 ring-gray-200 dark:ring-gray-800">
-                  <Shield className="h-5 w-5 text-blue-500" />
-                  <span className="text-[11px] text-center text-gray-600 dark:text-gray-400 leading-tight">
-                    Garansi produk
-                  </span>
-                </div>
-                <div className="flex flex-col items-center gap-1.5 rounded-xl bg-white dark:bg-gray-900 px-3 py-3 ring-1 ring-gray-200 dark:ring-gray-800">
-                  <Clock className="h-5 w-5 text-amber-500" />
-                  <span className="text-[11px] text-center text-gray-600 dark:text-gray-400 leading-tight">
-                    Respon cepat
-                  </span>
-                </div>
-              </div>
-
-              {/* Tags */}
-              <div className="flex flex-wrap gap-2">
-                {product.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="rounded-full bg-gray-100 dark:bg-gray-800 px-3 py-1 text-xs text-gray-600 dark:text-gray-400"
-                  >
-                    #{tag}
-                  </span>
                 ))}
-              </div>
-
-              {/* Divider */}
-              <hr className="border-gray-200 dark:border-gray-800" />
-
-              {/* Deskripsi */}
-              <div>
-                <h2 className="mb-3 text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Deskripsi Produk
-                </h2>
-                <div className="leading-relaxed text-gray-700 dark:text-gray-300 whitespace-pre-line text-sm">
-                  {product.description}
-                </div>
               </div>
             </div>
 
-            {/* ─── Tombol Aksi ─── */}
-            <div className="mt-8 space-y-3 lg:sticky lg:bottom-6">
+            {/* Description */}
+            <div>
+              <h2 className="mb-4 text-sm font-semibold text-ink uppercase tracking-wider">
+                Deskripsi Produk
+              </h2>
+              <div className="text-sm leading-relaxed text-body-text whitespace-pre-line">
+                {product.description}
+              </div>
+            </div>
+          </div>
+
+          {/* ─── Right Column: Product Info + CTA ─── */}
+          <div className="lg:sticky lg:top-24 lg:self-start space-y-6">
+            {/* Category & Rating */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="rounded-full bg-surface-soft px-3 py-1 text-xs font-medium text-ink">
+                {product.category}
+              </span>
+              <span className="text-sm text-ink font-medium">
+                {product.rating}
+              </span>
+              <span className="text-sm text-muted">
+                ({product.reviewCount} ulasan)
+              </span>
+              <span className="text-sm text-muted">•</span>
+              <span className="text-sm text-muted">
+                {product.sold} terjual
+              </span>
+            </div>
+
+            {/* Product Name */}
+            <h1 className="text-[22px] font-medium leading-tight text-ink">
+              {product.name}
+            </h1>
+
+            {/* Price */}
+            <div className="flex items-end gap-3">
+              <p className="text-[21px] font-bold text-ink">
+                {formatRupiah(product.price)}
+              </p>
+              {product.originalPrice && (
+                <span className="mb-0.5 text-sm text-muted line-through">
+                  {formatRupiah(product.originalPrice)}
+                </span>
+              )}
+            </div>
+
+            {/* Stock */}
+            <div className="flex items-center gap-2">
+              <span
+                className={`inline-block h-2.5 w-2.5 rounded-full ${
+                  product.stock > 0 ? "bg-green-500" : "bg-primary"
+                }`}
+              />
+              <span className="text-sm text-muted">
+                {product.stock > 0
+                  ? `Stok tersedia (${product.stock})`
+                  : "Stok habis"}
+              </span>
+            </div>
+
+            <hr className="border-hairline" />
+
+            {/* Quantity Picker */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-ink">Jumlah</label>
+              <div className="inline-flex items-center rounded-lg border border-hairline bg-canvas">
+                <button
+                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  className="flex h-10 w-10 items-center justify-center text-muted hover:text-ink transition-colors disabled:opacity-30"
+                  disabled={quantity <= 1}
+                >
+                  <Minus className="h-4 w-4" />
+                </button>
+                <span className="flex h-10 w-12 items-center justify-center text-sm font-semibold text-ink border-x border-hairline">
+                  {quantity}
+                </span>
+                <button
+                  onClick={() =>
+                    setQuantity(Math.min(product.stock, quantity + 1))
+                  }
+                  className="flex h-10 w-10 items-center justify-center text-muted hover:text-ink transition-colors disabled:opacity-30"
+                  disabled={quantity >= product.stock}
+                >
+                  <Plus className="h-4 w-4" />
+                </button>
+              </div>
+              <p className="text-xs text-muted">
+                Subtotal:{" "}
+                <span className="font-semibold text-ink">
+                  {formatRupiah(product.price * quantity)}
+                </span>
+              </p>
+            </div>
+
+            {/* Info Badges */}
+            <div className="grid grid-cols-3 gap-2">
+              <div className="flex flex-col items-center gap-1.5 rounded-lg border border-hairline px-3 py-3">
+                <Truck className="h-4 w-4 text-primary" />
+                <span className="text-[11px] text-center text-muted leading-tight">
+                  Siap dikirim
+                </span>
+              </div>
+              <div className="flex flex-col items-center gap-1.5 rounded-lg border border-hairline px-3 py-3">
+                <Shield className="h-4 w-4 text-primary" />
+                <span className="text-[11px] text-center text-muted leading-tight">
+                  Garansi produk
+                </span>
+              </div>
+              <div className="flex flex-col items-center gap-1.5 rounded-lg border border-hairline px-3 py-3">
+                <Clock className="h-4 w-4 text-primary" />
+                <span className="text-[11px] text-center text-muted leading-tight">
+                  Respon cepat
+                </span>
+              </div>
+            </div>
+
+            {/* Tags */}
+            <div className="flex flex-wrap gap-2">
+              {product.tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="rounded-full bg-surface-soft px-3 py-1 text-xs text-muted"
+                >
+                  #{tag}
+                </span>
+              ))}
+            </div>
+
+            <hr className="border-hairline" />
+
+            {/* CTA Buttons */}
+            <div className="space-y-3">
               <a
                 href={waLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-green-600 px-6 py-3.5 text-white font-semibold shadow-lg shadow-green-600/25 hover:bg-green-700 active:scale-[0.98] transition-all"
+                className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3.5 text-on-primary font-medium text-base hover:bg-primary-active active:bg-primary-active transition-colors h-12"
               >
                 <MessageCircle className="h-5 w-5" />
                 Order via WhatsApp
               </a>
-              <button className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-green-600 dark:border-green-500 px-6 py-3 text-green-600 dark:text-green-400 font-semibold hover:bg-green-50 dark:hover:bg-green-900/20 active:scale-[0.98] transition-all">
-                <ShoppingCart className="h-5 w-5" />
-                Tambah ke Keranjang
-              </button>
+            </div>
+
+            {/* Store Info */}
+            <div className="rounded-lg border border-hairline p-5">
+              <div className="flex items-center gap-4">
+                <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full border border-hairline">
+                  <Image
+                    src={store.logo}
+                    alt={store.name}
+                    fill
+                    sizes="48px"
+                    className="object-cover"
+                  />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-sm font-semibold text-ink truncate">
+                    {store.name}
+                  </h3>
+                  <p className="text-xs text-muted">{store.address}</p>
+                </div>
+                <Link
+                  href={`/toko/${store.slug}`}
+                  className="shrink-0 rounded-lg border border-hairline px-4 py-2 text-xs font-medium text-ink hover:border-ink transition-colors"
+                >
+                  <Store className="inline h-3.5 w-3.5 mr-1" />
+                  Kunjungi
+                </Link>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* ─── Info Toko ─── */}
-        <section className="mt-12 rounded-2xl bg-white dark:bg-gray-900 ring-1 ring-gray-200 dark:ring-gray-800 p-5 sm:p-6">
-          <div className="flex items-center gap-4">
-            <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full ring-2 ring-gray-200 dark:ring-gray-700">
-              <Image
-                src={store.logo}
-                alt={store.name}
-                fill
-                sizes="56px"
-                className="object-cover"
-              />
-            </div>
-            <div className="min-w-0 flex-1">
-              <h3 className="font-semibold text-gray-900 dark:text-white truncate">
-                {store.name}
-              </h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                {store.address}
-              </p>
-            </div>
-            <Link
-              href={`/toko/${store.slug}`}
-              className="shrink-0 rounded-xl bg-gray-100 dark:bg-gray-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-            >
-              <Store className="inline h-4 w-4 mr-1" />
-              Kunjungi Toko
-            </Link>
-          </div>
-        </section>
-
-        {/* ─── Produk Terkait ─── */}
-        <section className="mt-12">
-          <div className="mb-6 flex items-center justify-between">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+        {/* ─── Related Products ─── */}
+        <section className="mt-16">
+          <div className="mb-8 flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-ink">
               Produk Lainnya
             </h2>
             <Link
               href={`/toko/${store.slug}`}
-              className="text-sm font-medium text-green-600 dark:text-green-400 hover:underline"
+              className="text-sm font-medium text-ink underline underline-offset-2 hover:text-primary transition-colors"
             >
-              Lihat Semua →
+              Lihat Semua
             </Link>
           </div>
 
@@ -474,9 +458,9 @@ export default function ProductDetailPage() {
               <Link
                 key={rp.id}
                 href={`/toko/${store.slug}/${rp.slug}`}
-                className="group overflow-hidden rounded-2xl bg-white dark:bg-gray-900 ring-1 ring-gray-200 dark:ring-gray-800 hover:ring-green-400 dark:hover:ring-green-500 hover:shadow-lg transition-all"
+                className="group overflow-hidden rounded-lg border border-hairline transition-shadow hover:shadow-[0_0_0_1px_rgba(0,0,0,0.02),0_2px_6px_rgba(0,0,0,0.04),0_4px_8px_rgba(0,0,0,0.1)]"
               >
-                <div className="relative aspect-square overflow-hidden bg-gray-100 dark:bg-gray-800">
+                <div className="relative aspect-square overflow-hidden bg-surface-soft">
                   <Image
                     src={rp.image}
                     alt={rp.name}
@@ -485,17 +469,16 @@ export default function ProductDetailPage() {
                     className="object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                 </div>
-                <div className="p-3">
-                  <h3 className="text-sm font-medium text-gray-900 dark:text-white line-clamp-2 leading-snug min-h-[2.5rem]">
+                <div className="p-4">
+                  <h3 className="text-sm font-medium text-ink line-clamp-2 leading-snug">
                     {rp.name}
                   </h3>
-                  <p className="mt-2 text-sm font-bold text-green-600 dark:text-green-400">
+                  <p className="mt-2 text-sm font-semibold text-ink">
                     {formatRupiah(rp.price)}
                   </p>
-                  <div className="mt-1.5 flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500">
-                    <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                  <p className="mt-1 text-xs text-muted">
                     {rp.rating} • {rp.sold} terjual
-                  </div>
+                  </p>
                 </div>
               </Link>
             ))}
@@ -504,12 +487,15 @@ export default function ProductDetailPage() {
       </div>
 
       {/* ─── Footer ─── */}
-      <footer className="mt-16 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950">
-        <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
-          <div className="flex flex-col items-center gap-2 text-center text-sm text-gray-400 dark:text-gray-500">
-            <Package className="h-6 w-6" />
-            <p>Powered by <span className="font-semibold text-gray-600 dark:text-gray-300">Lapak</span></p>
-            <p className="text-xs">Platform UMKM Indonesia</p>
+      <footer className="mt-16 border-t border-hairline">
+        <div className="mx-auto max-w-[1080px] px-4 py-8 sm:px-6">
+          <div className="flex flex-col items-center gap-2 text-center">
+            <Link href="/" className="text-base font-bold text-primary">
+              Lapak
+            </Link>
+            <p className="text-xs text-muted">
+              © 2026 Lapak. Platform UMKM Indonesia.
+            </p>
           </div>
         </div>
       </footer>
