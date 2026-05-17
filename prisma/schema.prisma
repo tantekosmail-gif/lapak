@@ -15,3 +15,13 @@ model User {
   createdAt       DateTime  @default(now()) @map("created_at")
   @@map("users")
 }
+
+model ProductCategories {
+  id        Int      @id @default(autoincrement())
+  name      String
+  @@map("product_categories")
+}
+
+model Location{
+}
+
