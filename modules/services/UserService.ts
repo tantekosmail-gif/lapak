@@ -30,7 +30,6 @@ export class UserService extends BaseService<UserRepository> {
     if (!parsed.success) {
       return this.fail("USER_VALIDATION_FAILED", "Invalid Google profile", parsed.error.issues);
     }
-
     const { email, name, image } = parsed.data;
 
     try {

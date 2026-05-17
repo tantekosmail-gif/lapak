@@ -17,6 +17,10 @@ export class UserRepository extends BaseRepository<
   findByEmail(email: string) {
     return this.delegate.findUnique({ where: { email } });
   }
+
+  findById(id: number) {
+    return this.delegate.findUnique({ where: { id } });
+  }
 }
 
 export const userRepository = new UserRepository();

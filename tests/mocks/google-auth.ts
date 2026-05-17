@@ -27,6 +27,7 @@ export const buildMockSession = (
 });
 
 export const getServerSessionMock = jest.fn();
+export const getTokenMock = jest.fn();
 
 jest.mock("next-auth", () => {
   const actual = jest.requireActual("next-auth");
@@ -37,6 +38,11 @@ jest.mock("next-auth", () => {
     getServerSession: (...args: unknown[]) => getServerSessionMock(...args),
   };
 });
+
+jest.mock("next-auth/jwt", () => ({
+  __esModule: true,
+  getToken: (...args: unknown[]) => getTokenMock(...args),
+}));
 
 jest.mock("next-auth/providers/google", () => ({
   __esModule: true,
@@ -49,9 +55,17 @@ jest.mock("next-auth/providers/google", () => ({
 }));
 
 export const signedInAs = (overrides: Partial<Session> = {}) => {
-  getServerSessionMock.mockResolvedValue(buildMockSession(overrides));
+  const session = buildMockSession(overrides);
+  getServerSessionMock.mockResolvedValue(session);
+  getTokenMock.mockResolvedValue({
+    id: session.user?.id,
+    email: session.user?.email,
+    name: session.user?.name,
+    picture: session.user?.image,
+  });
 };
 
 export const signedOut = () => {
   getServerSessionMock.mockResolvedValue(null);
+  getTokenMock.mockResolvedValue(null);
 };
