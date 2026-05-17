@@ -62,9 +62,9 @@ interface StoreInfo {
 
 const dummyStore: StoreInfo = {
   id: "store-1",
-  name: "Toko Batik Nusantara",
-  slug: "toko-batik-nusantara",
-  description: "Batik berkualitas tinggi dari pengrajin lokal",
+  name: "Nusantara Batik",
+  slug: "nusantara-batik",
+  description: "Batik berkualitas tinggi dari pengrajin terbaik Indonesia",
   logo: "https://images.pexels.com/photos/6044266/pexels-photo-6044266.jpeg?auto=compress&cs=tinysrgb&w=100",
   phone: "6281234567890",
   address: "Solo, Jawa Tengah",
@@ -491,10 +491,10 @@ export default function ProductDetailPage() {
         <div className="mx-auto max-w-[1080px] px-4 py-8 sm:px-6">
           <div className="flex flex-col items-center gap-2 text-center">
             <Link href="/" className="text-base font-bold text-primary">
-              Lapak
+              Nusantara Batik
             </Link>
             <p className="text-xs text-muted">
-              © 2026 Lapak. Platform UMKM Indonesia.
+              © 2026 Nusantara Batik. Batik premium dari seluruh Nusantara.
             </p>
           </div>
         </div>

@@ -12,11 +12,11 @@ export default function AuthLayout({
         <div className="text-center mb-10">
           <Link href="/" className="inline-block">
             <h1 className="text-3xl font-bold text-primary tracking-tight">
-              Lapak
+              Nusantara Batik
             </h1>
           </Link>
           <p className="text-muted mt-2 text-sm">
-            Bikin toko online UMKM dalam 5 menit
+            Temukan koleksi batik berkualitas tinggi dari pengrajin terbaik Indonesia
           </p>
         </div>
 

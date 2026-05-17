@@ -1,24 +1,36 @@
 "use client";
 
 import Link from "next/link";
-import { ShoppingCart, Menu, X, User, LogOut } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ShoppingCart, Menu, X, User, LogOut, Search } from "lucide-react";
 import { useCart } from "../lib/cart-context";
-import { useState } from "react";
+import { useState, FormEvent } from "react";
 
 export function StoreHeader() {
   const { totalItems } = useCart();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const router = useRouter();
+
+  function handleSearch(e: FormEvent) {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/toko?q=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery("");
+      setMobileOpen(false);
+    }
+  }
 
   return (
     <header className="sticky top-0 z-40 border-b border-hairline bg-canvas/95 backdrop-blur-sm">
-      <div className="mx-auto flex h-16 max-w-[1280px] items-center justify-between px-4 sm:px-6">
+      <div className="mx-auto flex h-16 max-w-[1280px] items-center justify-between gap-4 px-4 sm:px-6">
         {/* Logo */}
-        <Link href="/" className="text-xl font-bold text-primary tracking-tight">
-          Lapak
+        <Link href="/" className="text-xl font-bold text-primary tracking-tight shrink-0">
+          Nusantara Batik
         </Link>
 
         {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center gap-6">
+        <nav className="hidden md:flex items-center gap-6 shrink-0">
           <Link
             href="/toko"
             className="text-sm font-medium text-ink hover:text-primary transition-colors"
@@ -33,8 +45,31 @@ export function StoreHeader() {
           </Link>
         </nav>
 
+        {/* Search Bar — Desktop */}
+        <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-md mx-4">
+          <div className="relative w-full">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Cari produk..."
+              className="w-full rounded-lg border border-hairline bg-surface-soft py-2.5 pl-10 pr-4 text-sm text-ink placeholder:text-muted-soft focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-colors"
+            />
+          </div>
+        </form>
+
         {/* Right side */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 shrink-0">
+          {/* Mobile Search Toggle */}
+          <Link
+            href="/toko"
+            className="flex md:hidden h-10 w-10 items-center justify-center rounded-full hover:bg-surface-soft transition-colors"
+            aria-label="Cari"
+          >
+            <Search className="h-5 w-5 text-ink" />
+          </Link>
+
           <Link
             href="/cart"
             className="relative flex h-10 w-10 items-center justify-center rounded-full hover:bg-surface-soft transition-colors"
@@ -80,6 +115,20 @@ export function StoreHeader() {
       {/* Mobile Menu */}
       {mobileOpen && (
         <div className="md:hidden border-t border-hairline bg-canvas">
+          <div className="mx-auto max-w-[1280px] px-4 pt-4">
+            <form onSubmit={handleSearch}>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Cari produk..."
+                  className="w-full rounded-lg border border-hairline bg-surface-soft py-2.5 pl-10 pr-4 text-sm text-ink placeholder:text-muted-soft focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-colors"
+                />
+              </div>
+            </form>
+          </div>
           <nav className="mx-auto max-w-[1280px] px-4 py-4 space-y-1">
             <Link
               href="/toko"
@@ -139,7 +188,7 @@ export function CustomerHeader() {
     <header className="sticky top-0 z-40 border-b border-hairline bg-canvas/95 backdrop-blur-sm">
       <div className="mx-auto flex h-16 max-w-[1280px] items-center justify-between px-4 sm:px-6">
         <Link href="/" className="text-xl font-bold text-primary tracking-tight">
-          Lapak
+          Nusantara Batik
         </Link>
 
         <nav className="hidden md:flex items-center gap-6">
