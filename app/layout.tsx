@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Lapak — Toko Online UMKM",
-  description: "Platform toko online gratis untuk UMKM Indonesia. Buat toko, tambah produk, bagikan ke WhatsApp.",
+  title: "Nusantara Batik — Batik Premium dari Seluruh Indonesia",
+  description: "Temukan koleksi batik tulis, batik cap, dan aksesoris batik berkualitas tinggi langsung dari pengrajin terbaik Indonesia. Harga terjangkau, kualitas terjamin.",
 };
 
 export default function RootLayout({

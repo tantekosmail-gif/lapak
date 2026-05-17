@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { User, Mail, Phone, MapPin, Package, Heart, Settings, LogOut, Store } from "lucide-react";
+import { User, Mail, Phone, MapPin, Package, Heart, Settings, LogOut, Store, Pencil } from "lucide-react";
 import { StoreHeader } from "../components/Header";
 import { Footer } from "../components/Footer";
 
@@ -22,9 +22,10 @@ function formatRupiah(value: number): string {
 
 const menuItems = [
   { href: "/orders", label: "Pesanan Saya", icon: Package, count: 3 },
+  { href: "/wishlist", label: "Wishlist", icon: Heart, count: 5 },
+  { href: "/profile/alamat", label: "Alamat Pengiriman", icon: MapPin },
+  { href: "/profile/edit", label: "Edit Profil", icon: Settings },
   { href: "/dashboard", label: "Dashboard Toko", icon: Store },
-  { href: "#wishlist", label: "Wishlist", icon: Heart, count: 5 },
-  { href: "#settings", label: "Pengaturan", icon: Settings },
 ];
 
 export default function ProfilePage() {
@@ -67,7 +68,13 @@ export default function ProfilePage() {
 
         {/* Contact Info */}
         <div className="rounded-xl border border-hairline p-6 mb-6">
-          <h2 className="text-base font-semibold text-ink mb-4">Informasi Kontak</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-base font-semibold text-ink">Informasi Kontak</h2>
+            <Link href="/profile/edit" className="flex items-center gap-1.5 text-xs font-medium text-primary hover:underline">
+              <Pencil className="h-3 w-3" />
+              Edit
+            </Link>
+          </div>
           <div className="space-y-3">
             <div className="flex items-center gap-3">
               <Mail className="h-4 w-4 text-muted shrink-0" />

@@ -26,7 +26,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <button onClick={() => setMobileOpen(!mobileOpen)} className="lg:hidden flex h-9 w-9 items-center justify-center rounded-full hover:bg-surface-soft transition-colors">
               {mobileOpen ? <X className="h-5 w-5 text-ink" /> : <Menu className="h-5 w-5 text-ink" />}
             </button>
-            <Link href="/" className="text-lg font-bold text-primary tracking-tight">Lapak</Link>
+            <Link href="/" className="text-lg font-bold text-primary tracking-tight">Nusantara Batik</Link>
             <span className="hidden sm:inline text-sm text-muted">/ Dashboard</span>
           </div>
           <Link href="/" className="flex items-center gap-1.5 text-sm text-muted hover:text-ink transition-colors">
@@ -41,7 +41,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <aside className={`fixed lg:static inset-y-0 left-0 z-30 w-64 border-r border-hairline bg-canvas transform transition-transform lg:translate-x-0 ${mobileOpen ? "translate-x-0 pt-14" : "-translate-x-full"}`}>
           <div className="p-4 border-b border-hairline">
             <h2 className="text-sm font-semibold text-ink">Dashboard Toko</h2>
-            <p className="text-xs text-muted mt-0.5">Toko Batik Nusantara</p>
+            <p className="text-xs text-muted mt-0.5">Nusantara Batik</p>
           </div>
           <nav className="p-3 space-y-0.5">
             {sidebarLinks.map((link) => {
