@@ -44,10 +44,29 @@ export class ProductCategoryService extends BaseService<ProductCategoryRepositor
         page: number = 1,
         limit: number = 10,
         sortBy: string = "createdAt",
-        sortDir: string = "desc"): Promise<Response<ProductCategoryEntity[]>> {
+        sortDir: string = "desc",
+        search: string
+    ): Promise<Response<ProductCategoryEntity[]>> {
         const { skip, take } = Paginations.getPaging(page, limit);
+        let categories: ProductCategoryEntity[] = [];
+
         try {
-            const categories = await this.repository.findMany({
+            if (search) {
+                categories = await this.repository.findMany({
+                    skip,
+                    take,
+                    where: {
+                        name: {
+                            contains: search
+                        }
+                    },
+                    orderBy: {
+                        [sortBy]: sortDir
+                    }
+                });
+                return this.ok(categories);
+            }
+            categories = await this.repository.findMany({
                 skip,
                 take,
                 orderBy: {
