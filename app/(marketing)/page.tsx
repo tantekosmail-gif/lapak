@@ -463,9 +463,10 @@ export default function HomePage() {
         </div>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {blogPosts.map((post) => (
-            <article
+            <Link
               key={post.slug}
-              className="group rounded-xl border border-hairline overflow-hidden transition-all hover:shadow-[0_0_0_1px_rgba(0,0,0,0.02),0_2px_6px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.08)]"
+              href={`/blog/${post.slug}`}
+              className="group block rounded-xl border border-hairline overflow-hidden transition-all hover:shadow-[0_0_0_1px_rgba(0,0,0,0.02),0_2px_6px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.08)]"
             >
               <div className="relative aspect-[16/9] bg-surface-soft overflow-hidden">
                 <Image
@@ -492,7 +493,7 @@ export default function HomePage() {
                   <ArrowRight className="h-3 w-3" />
                 </span>
               </div>
-            </article>
+            </Link>
           ))}
         </div>
       </section>

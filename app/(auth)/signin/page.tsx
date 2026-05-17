@@ -167,6 +167,27 @@ function SignInForm() {
         </div>
       </div>
 
+      {/* Forgot password */}
+      <p className="text-center text-sm text-muted">
+        Lupa kata sandi?{" "}
+        <Link
+          href="/forgot-password"
+          className="text-ink font-medium underline underline-offset-2 hover:text-primary transition-colors"
+        >
+          Reset di sini
+        </Link>
+      </p>
+
+      {/* Divider */}
+      <div className="relative my-6">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-hairline" />
+        </div>
+        <div className="relative flex justify-center text-xs">
+          <span className="bg-canvas px-4 text-muted">atau</span>
+        </div>
+      </div>
+
       {/* Footer link */}
       <p className="text-center text-sm text-muted">
         Belum punya akun?{" "}
