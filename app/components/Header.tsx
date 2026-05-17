@@ -50,15 +50,9 @@ export function StoreHeader() {
           <div className="hidden md:flex items-center gap-2">
             <Link
               href="/signin"
-              className="text-sm font-medium text-ink hover:text-primary transition-colors px-3 py-2"
-            >
-              Masuk
-            </Link>
-            <Link
-              href="/signup"
               className="rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-on-primary hover:bg-primary-active active:bg-primary-active transition-colors"
             >
-              Daftar
+              Masuk
             </Link>
           </div>
 
@@ -113,16 +107,9 @@ export function StoreHeader() {
             <Link
               href="/signin"
               onClick={() => setMobileOpen(false)}
-              className="block rounded-lg px-4 py-3 text-sm font-medium text-ink hover:bg-surface-soft transition-colors"
-            >
-              Masuk
-            </Link>
-            <Link
-              href="/signup"
-              onClick={() => setMobileOpen(false)}
               className="block rounded-lg bg-primary px-4 py-3 text-sm font-medium text-on-primary text-center"
             >
-              Daftar Gratis
+              Masuk dengan Google
             </Link>
           </nav>
         </div>

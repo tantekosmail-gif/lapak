@@ -1,44 +1,12 @@
 import type { NextAuthOptions } from "next-auth";
-import CredentialsProvider from "next-auth/providers/credentials";
-import bcrypt from "bcryptjs";
-import { prisma } from "./prisma";
+import GoogleProvider from "next-auth/providers/google";
+import { userService } from "@/modules/services/UserService";
 
 export const authOptions: NextAuthOptions = {
   providers: [
-    CredentialsProvider({
-      name: "credentials",
-      credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" },
-      },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error("Email dan kata sandi wajib diisi");
-        }
-
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
-        });
-
-        if (!user) {
-          throw new Error("Email atau kata sandi salah");
-        }
-
-        const isPasswordValid = await bcrypt.compare(
-          credentials.password,
-          user.password
-        );
-
-        if (!isPasswordValid) {
-          throw new Error("Email atau kata sandi salah");
-        }
-
-        return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-        };
-      },
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
   ],
   session: {
@@ -48,15 +16,29 @@ export const authOptions: NextAuthOptions = {
     signIn: "/signin",
   },
   callbacks: {
+    async signIn({ user }) {
+      if (!user.email) return false;
+
+      const result = await userService.upsertFromGoogle({
+        email: user.email,
+        name: user.name,
+        image: user.image,
+      });
+
+      return result.success;
+    },
     async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
+      if (user?.email) {
+        const result = await userService.findByEmail(user.email);
+        if (result.success && result.data) {
+          token.id = result.data.id;
+        }
       }
       return token;
     },
     async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.id as string;
+      if (session.user && typeof token.id === "number") {
+        session.user.id = token.id;
       }
       return session;
     },

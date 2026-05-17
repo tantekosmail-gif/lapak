@@ -29,11 +29,6 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/signup" className="text-sm text-muted hover:text-ink transition-colors">
-                  Daftar
-                </Link>
-              </li>
-              <li>
                 <Link href="/profile" className="text-sm text-muted hover:text-ink transition-colors">
                   Profil
                 </Link>
