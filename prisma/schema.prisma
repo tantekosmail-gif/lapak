@@ -22,6 +22,5 @@ model ProductCategories {
   @@map("product_categories")
 }
 
-model Location{
-}
+
 
