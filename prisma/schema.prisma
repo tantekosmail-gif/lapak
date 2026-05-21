@@ -42,6 +42,7 @@ model Product {
   category   ProductCategories? @relation(fields: [categoryId], references: [id])
 
   images     ProductImage[]
+  orderItems OrderItem[]
 
   @@map("products")
 }
@@ -57,6 +58,45 @@ model ProductImage {
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@map("product_images")
+}
+
+model Order {
+  id          Int         @id @default(autoincrement())
+  orderNumber String      @unique @map("order_number")
+  customer    String
+  total       Int
+  itemsCount  Int         @default(0) @map("items_count")
+  status      OrderStatus @default(MENUNGGU)
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+
+  items       OrderItem[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id          Int      @id @default(autoincrement())
+  quantity    Int      @default(1)
+  price       Int
+  subtotal    Int
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  orderId     Int      @map("order_id")
+  productId   Int      @map("product_id")
+
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product     Product  @relation(fields: [productId], references: [id])
+
+  @@map("order_items")
+}
+
+enum OrderStatus {
+  MENUNGGU
+  DIPROSES
+  DIKIRIM
+  SELESAI
+  DIBATALKAN
 }
 
 enum Status {

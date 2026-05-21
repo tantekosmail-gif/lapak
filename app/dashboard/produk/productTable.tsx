@@ -21,8 +21,6 @@ export default function ProductTable({
     p.name.toLowerCase().includes(search.toLowerCase()),
   );
 
-  console.log(filtered,"<------------")
-
   function formatRupiah(value: number) {
     return new Intl.NumberFormat("id-ID", {
       style: "currency",
