@@ -1,6 +1,9 @@
 import { randomUUID } from "node:crypto";
-import { writeFile } from "node:fs/promises";
+import { createWriteStream } from "node:fs";
+import { unlink } from "node:fs/promises";
 import path from "node:path";
+import { Readable, Transform } from "node:stream";
+import { pipeline } from "node:stream/promises";
 import { BaseResponse, Response } from "../core";
 
 const ALLOWED_MIME = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
@@ -41,18 +44,59 @@ export class UploadService extends BaseResponse {
         if (file.size > MAX_BYTES) {
             return this.fail("UPLOAD_TOO_LARGE", `File exceeds ${MAX_BYTES} bytes`);
         }
+
+        const ext = extensionFromMime(file.type);
+        const filename = `${randomUUID()}.${ext}`;
+        const target = path.join(this.uploadDir, filename);
+
+        let written = 0;
+        const sizeGuard = new Transform({
+            transform(chunk, _enc, cb) {
+                written += chunk.byteLength;
+                if (written > MAX_BYTES) {
+                    cb(new Error("UPLOAD_TOO_LARGE"));
+                    return;
+                }
+                cb(null, chunk);
+            },
+        });
+
         try {
-            const ext = extensionFromMime(file.type);
-            const filename = `${randomUUID()}.${ext}`;
-            const buffer = Buffer.from(await file.arrayBuffer());
-            await writeFile(path.join(this.uploadDir, filename), buffer);
+            const source = Readable.fromWeb(file.stream() as Parameters<typeof Readable.fromWeb>[0]);
+            const writeStream = createWriteStream(target, { highWaterMark: 64 * 1024 });
+            await pipeline(source, sizeGuard, writeStream);
+
             return this.ok({
                 url: `${this.publicPrefix}/${filename}`,
                 filename,
-                size: file.size,
+                size: written,
             });
         } catch (error) {
+            await unlink(target).catch(() => undefined);
+            if (error instanceof Error && error.message === "UPLOAD_TOO_LARGE") {
+                return this.fail("UPLOAD_TOO_LARGE", `File exceeds ${MAX_BYTES} bytes`);
+            }
             return this.wrapError(error, "UPLOAD_FAILED");
+        }
+    }
+
+    async deleteByUrl(url: string): Promise<Response<{ url: string }>> {
+        try {
+            if (!url.startsWith(`${this.publicPrefix}/`)) {
+                return this.fail("UPLOAD_INVALID_URL", "URL is not managed by this storage");
+            }
+            const filename = path.basename(url);
+            const target = path.join(this.uploadDir, filename);
+            const resolved = path.resolve(target);
+            if (!resolved.startsWith(path.resolve(this.uploadDir) + path.sep)) {
+                return this.fail("UPLOAD_INVALID_URL", "Path traversal blocked");
+            }
+            await unlink(resolved).catch((err) => {
+                if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err;
+            });
+            return this.ok({ url });
+        } catch (error) {
+            return this.wrapError(error, "UPLOAD_DELETE_FAILED");
         }
     }
 }

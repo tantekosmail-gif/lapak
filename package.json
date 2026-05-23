@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "test:bench": "node --expose-gc node_modules/.bin/jest --config jest.config.ts --testMatch '<rootDir>/tests/benchmarks/**/*.test.ts' --runInBand"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",
