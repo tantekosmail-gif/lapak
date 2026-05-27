@@ -6,6 +6,7 @@ export const productStatusEnum = z.enum(["AKTIF", "HABIS", "NONAKTIF"]);
 export const createProductSchema = z.object({
     name: z.string().min(1),
     price: z.number().int().nonnegative(),
+    regular_price: z.number().int().nonnegative(),
     stock: z.number().int().nonnegative().optional(),
     sold: z.number().int().nonnegative().optional(),
     imageUrl: z.string().url().optional(),

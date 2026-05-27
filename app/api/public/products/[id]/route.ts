@@ -1,6 +1,7 @@
 import productService from "@/modules/services/ProductService";
 import { NextRequest, NextResponse } from "next/server";
 
+// GET /api/public/products/:id -> detail produk publik (guest & customer).
 export async function GET(
     _request: NextRequest,
     context: { params: Promise<{ id: string }> },

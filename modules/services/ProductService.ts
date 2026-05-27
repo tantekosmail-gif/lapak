@@ -69,6 +69,7 @@ export class ProductService extends BaseService<ProductRepository> {
             const product = await this.repository.create({
                 name: data.name,
                 price: data.price,
+                regular_price: data.regular_price,
                 stock: data.stock ?? 0,
                 sold: data.sold ?? 0,
                 imageUrl: data.imageUrl,
@@ -96,6 +97,7 @@ export class ProductService extends BaseService<ProductRepository> {
             const product = await this.repository.updateById(Number(id), {
                 name: data.name,
                 price: data.price,
+                regular_price: data.regular_price,
                 stock: data.stock,
                 sold: data.sold,
                 imageUrl: data.imageUrl,
@@ -143,6 +145,7 @@ export class ProductService extends BaseService<ProductRepository> {
                     data: {
                         name: product.name,
                         price: product.price,
+                        regular_price: product.regular_price,
                         stock: product.stock ?? 0,
                         sold: product.sold ?? 0,
                         imageUrl: product.imageUrl,
