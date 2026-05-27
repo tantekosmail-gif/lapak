@@ -12,4 +12,4 @@ jobs:
         run: |
           curl -H "Content-Type: application/json" \
           -d '{"content": "🚀 Heads Up! \nNew Pull request **${{ github.event.pull_request.title }}** \nby ${{ github.event.pull_request.user.login }}\nLink: ${{ github.event.pull_request.html_url }}"}' \
-          ${{ secrets.DISCORD_WEBHOOK }}
+          https://discord.com/api/webhooks/1509212301985579224/qlrWoh5BTMONCqB-A_9iuoAqMqkToGItemX7qk7NGs7OM2txIsnT9trW_puTh-pmN_kr
