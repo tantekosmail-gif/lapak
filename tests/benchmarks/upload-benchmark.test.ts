@@ -14,7 +14,7 @@ const FILE_BYTES = 4 * MB;
 
 const buildFile = (size: number): File => {
     const chunkSize = 64 * 1024;
-    const chunks: Uint8Array[] = [];
+    const chunks: Uint8Array<ArrayBuffer>[] = [];
     for (let written = 0; written < size; written += chunkSize) {
         const len = Math.min(chunkSize, size - written);
         const chunk = new Uint8Array(len);

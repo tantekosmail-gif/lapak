@@ -23,6 +23,15 @@ export class UserService extends BaseService<UserRepository> {
     }
   }
 
+  async findAdminByEmail(email: string): Promise<Response<UserEntity | null>> {
+    try {
+      const user = await this.repository.findAdminByEmail(email);
+      return this.ok(user);
+    } catch (error) {
+      return this.wrapError(error, "USER_FIND_FAILED");
+    }
+  }
+
   async upsertFromGoogle(
     input: UpsertGoogleUserDto,
   ): Promise<Response<UserEntity>> {

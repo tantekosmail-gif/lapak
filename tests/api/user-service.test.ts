@@ -38,6 +38,36 @@ describe("UserService", () => {
     });
   });
 
+  describe("findAdminByEmail", () => {
+    it("returns the user when userType is ADMIN", async () => {
+      const adminUser = {
+        id: 9,
+        email: "admin@example.com",
+        name: "Admin",
+        image: null,
+        userType: "ADMIN",
+      };
+      prismaMock.user.findFirst.mockResolvedValue(adminUser);
+
+      const result = await userService.findAdminByEmail("admin@example.com");
+
+      expect(result.success).toBe(true);
+      if (result.success) expect(result.data).toEqual(adminUser);
+      expect(prismaMock.user.findFirst).toHaveBeenCalledWith({
+        where: { email: "admin@example.com", userType: "ADMIN" },
+      });
+    });
+
+    it("returns null when no admin matches", async () => {
+      prismaMock.user.findFirst.mockResolvedValue(null);
+
+      const result = await userService.findAdminByEmail("foo@example.com");
+
+      expect(result.success).toBe(true);
+      if (result.success) expect(result.data).toBeNull();
+    });
+  });
+
   describe("upsertFromGoogle", () => {
     it("upserts a valid Google profile and returns the entity", async () => {
       const created = {

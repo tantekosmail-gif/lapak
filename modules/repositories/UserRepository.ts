@@ -21,6 +21,12 @@ export class UserRepository extends BaseRepository<
   findById(id: number) {
     return this.delegate.findUnique({ where: { id } });
   }
+
+  findAdminByEmail(email: string) {
+    return this.delegate.findFirst({
+      where: { email, userType: "ADMIN" } as Prisma.UserWhereInput,
+    });
+  }
 }
 
 export const userRepository = new UserRepository();

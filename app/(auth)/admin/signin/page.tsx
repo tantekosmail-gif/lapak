@@ -4,6 +4,8 @@ import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 
+const ADMIN_INTENT_COOKIE = "lapak_admin_intent";
+
 function GoogleIcon() {
   return (
     <svg
@@ -31,7 +33,7 @@ function GoogleIcon() {
   );
 }
 
-function SignInForm() {
+function AdminSignInForm() {
   const searchParams = useSearchParams();
   const errorParam = searchParams.get("error");
 
@@ -39,21 +41,27 @@ function SignInForm() {
 
   async function handleGoogleSignIn() {
     setIsLoading(true);
-    await signIn("google", { callbackUrl: "/" });
+    document.cookie = `${ADMIN_INTENT_COOKIE}=1; path=/; max-age=300; SameSite=Lax`;
+    await signIn("google", { callbackUrl: "/dashboard" });
   }
+
+  const errorMessage =
+    errorParam === "NotAdmin"
+      ? "Akun Google Anda belum terdaftar sebagai admin. Silakan hubungi administrator."
+      : errorParam
+        ? "Gagal masuk dengan Google. Silakan coba lagi."
+        : null;
 
   return (
     <div>
-      <h2 className="text-2xl font-semibold text-ink mb-1">Masuk</h2>
+      <h2 className="text-2xl font-semibold text-ink mb-1">Masuk Admin</h2>
       <p className="text-muted text-sm mb-8">
-        Masuk atau daftar dengan akun Google Anda.
+        Hanya akun yang telah ditetapkan sebagai admin yang dapat masuk ke dashboard.
       </p>
 
-      {errorParam && (
+      {errorMessage && (
         <div className="bg-red-50 border border-error/20 rounded-lg px-4 py-3 mb-6">
-          <p className="text-error text-sm">
-            Gagal masuk dengan Google. Silakan coba lagi.
-          </p>
+          <p className="text-error text-sm">{errorMessage}</p>
         </div>
       )}
 
@@ -68,17 +76,17 @@ function SignInForm() {
       </button>
 
       <p className="text-center text-xs text-muted mt-8">
-        Dengan masuk, Anda menyetujui Ketentuan Layanan dan Kebijakan Privasi
-        kami.
+        Admin tidak dapat didaftarkan dari halaman ini. Akses admin hanya bisa
+        diberikan melalui promosi akun yang sudah ada.
       </p>
     </div>
   );
 }
 
-export default function SignInPage() {
+export default function AdminSignInPage() {
   return (
     <Suspense>
-      <SignInForm />
+      <AdminSignInForm />
     </Suspense>
   );
 }

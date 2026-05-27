@@ -117,7 +117,7 @@ describe("GET /api/product-categories", () => {
             image: "a.jpg",
         });
         const prism = Promise.resolve({ id: "1" })
-        const response = await GET_BY_ID(prism as any);
+        const response = await GET_BY_ID({} as any, { params: prism } as any);
         const body = await response.json();
         expect(body.success).toBe(true);
         expect(body.data).toEqual({
@@ -143,7 +143,7 @@ describe("GET /api/product-categories", () => {
             name: "a",
             image: "a.jpg",
         };
-        const response = await PUT(buildPostRequest(requestBody, 1, "PUT"), prism as any);
+        const response = await PUT(buildPostRequest(requestBody, 1, "PUT"), { params: prism } as any);
         const body = await response.json();
         expect(body.success).toBe(true);
         expect(body.data).toEqual({
@@ -160,7 +160,7 @@ describe("GET /api/product-categories", () => {
             image: "a.jpg",
         });
         const prism = Promise.resolve({ id: "1" })
-        const response = await DELETE(prism as any);
+        const response = await DELETE({} as any, { params: prism } as any);
         const body = await response.json();
         expect(body.success).toBe(true);
         expect(body.data).toEqual({
