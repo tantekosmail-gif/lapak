@@ -100,7 +100,14 @@ export default function ProductTable({
                     </div>
                   </td>
                   <td className="px-6 py-3 text-sm text-ink">
-                    {formatRupiah(p.price)}
+                    <div className="flex flex-col">
+                      <span>{formatRupiah(p.price)}</span>
+                      {p.regular_price > p.price && (
+                        <span className="text-xs text-muted line-through">
+                          {formatRupiah(p.regular_price)}
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td className="px-6 py-3 text-sm text-ink hidden sm:table-cell">
                     {p.stock}

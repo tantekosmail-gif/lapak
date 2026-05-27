@@ -2,6 +2,7 @@ import productService from "@/modules/services/ProductService";
 import { sortParamDirection } from "@/modules/statics/SortParam";
 import { NextRequest, NextResponse } from "next/server";
 
+// GET /api/public/products -> daftar produk publik (guest & customer).
 export async function GET(request: NextRequest) {
     try {
         const { searchParams } = request.nextUrl;
@@ -18,9 +19,6 @@ export async function GET(request: NextRequest) {
 
         return NextResponse.json({ ...result });
     } catch (error) {
-        return NextResponse.json(
-            { error: error },
-            { status: 500 },
-        );
+        return NextResponse.json({ error: error }, { status: 500 });
     }
 }

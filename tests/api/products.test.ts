@@ -3,15 +3,15 @@ import "@/tests/mocks/google-auth";
 
 import { NextRequest } from "next/server";
 import { prismaMock } from "@/tests/mocks/prisma";
-import { GET } from "@/app/api/(auth)/products/route";
-import { GET as GET_BY_ID } from "@/app/api/(auth)/products/[id]/route";
+import { GET } from "@/app/api/public/products/route";
+import { GET as GET_BY_ID } from "@/app/api/public/products/[id]/route";
 import { POST as POST_SAVE } from "@/app/api/(auth)/products/save/route";
 import { POST as POST_SAVE_ALL } from "@/app/api/(auth)/products/saveAll/route";
 import { PUT } from "@/app/api/(auth)/products/[id]/update/route";
 import { DELETE } from "@/app/api/(auth)/products/[id]/delete/route";
 
 const buildRequest = (search = "") =>
-    new NextRequest(`http://localhost:3000/api/products${search}`);
+    new NextRequest(`http://localhost:3000/api/public/products${search}`);
 
 const buildBodyRequest = (body: any, path = "", method = "POST") =>
     new NextRequest(`http://localhost:3000/api/products${path}`, {
@@ -24,6 +24,7 @@ const sampleProducts = [
         id: 1,
         name: "Kopi Susu",
         price: 15000,
+        regular_price: 20000,
         stock: 10,
         sold: 0,
         imageUrl: null,
@@ -37,6 +38,7 @@ const sampleProducts = [
         id: 2,
         name: "Teh Manis",
         price: 5000,
+        regular_price: 7000,
         stock: 20,
         sold: 0,
         imageUrl: null,
@@ -48,7 +50,7 @@ const sampleProducts = [
     },
 ];
 
-describe("GET /api/products", () => {
+describe("GET /api/public/products", () => {
     it("returns the paginated products with default page=1, limit=10", async () => {
         prismaMock.product.findMany.mockResolvedValue(sampleProducts);
 
@@ -114,7 +116,7 @@ describe("GET /api/products", () => {
     });
 });
 
-describe("GET /api/products/[id]", () => {
+describe("GET /api/public/products/[id]", () => {
     it("returns the product when it exists", async () => {
         prismaMock.product.findFirst.mockResolvedValue(sampleProducts[0]);
 
@@ -143,6 +145,7 @@ describe("POST /api/products/save", () => {
             buildBodyRequest({
                 name: "Kopi Susu",
                 price: 15000,
+                regular_price: 20000,
                 stock: 10,
             }),
         );
@@ -187,7 +190,7 @@ describe("POST /api/products/saveAll", () => {
         const response = await POST_SAVE_ALL(
             buildBodyRequest({
                 category: { name: "Minuman" },
-                product: { name: "Kopi Susu", price: 15000, stock: 10 },
+                product: { name: "Kopi Susu", price: 15000, regular_price: 20000, stock: 10 },
             }),
         );
 
