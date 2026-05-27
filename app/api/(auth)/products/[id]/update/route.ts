@@ -1,8 +1,11 @@
 import productService from "@/modules/services/ProductService";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function PUT(request: NextRequest, params: Promise<{ id: string }>) {
-    const { id } = await params;
+export async function PUT(
+    request: NextRequest,
+    context: { params: Promise<{ id: string }> },
+) {
+    const { id } = await context.params;
     const body = await request.json();
     const result = await productService.update(id, body);
     if (!result.success) {

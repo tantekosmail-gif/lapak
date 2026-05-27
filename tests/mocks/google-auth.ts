@@ -62,6 +62,7 @@ export const signedInAs = (overrides: Partial<Session> = {}) => {
     email: session.user?.email,
     name: session.user?.name,
     picture: session.user?.image,
+    userType: session.user?.userType,
   });
 };
 

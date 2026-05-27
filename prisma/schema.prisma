@@ -1,7 +1,6 @@
 generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["driverAdapters"]
-  output          = "../app/generated/prisma"
+  provider = "prisma-client-js"
+  output   = "../app/generated/prisma"
 }
 
 datasource db {
@@ -13,9 +12,13 @@ model User {
   email           String    @unique
   name            String
   image           String?
+  address         String?
   createdAt       DateTime  @default(now()) @map("created_at")
+  userType        UserTypeEnum @default(CUSTOMER) @map("user_type")
+  orders          Order[]
   @@map("users")
 }
+
 
 model ProductCategories {
   id        Int      @id @default(autoincrement())
@@ -63,15 +66,14 @@ model ProductImage {
 model Order {
   id          Int         @id @default(autoincrement())
   orderNumber String      @unique @map("order_number")
-  customer    String
+  customerId  Int         
   total       Int
   itemsCount  Int         @default(0) @map("items_count")
   status      OrderStatus @default(MENUNGGU)
   createdAt   DateTime    @default(now()) @map("created_at")
   updatedAt   DateTime    @updatedAt @map("updated_at")
-
   items       OrderItem[]
-
+  customer    User @relation(fields:[customerId], references:[id], onDelete: Cascade)
   @@map("orders")
 }
 
@@ -91,8 +93,15 @@ model OrderItem {
   @@map("order_items")
 }
 
+model StoreConfiguration{
+  id Int @id @default(autoincrement())
+  settings Json @default("{}")  
+  @@map("store_configuraions")
+}
+
 enum OrderStatus {
   MENUNGGU
+  MENUNGGU_PEMBATALAN
   DIPROSES
   DIKIRIM
   SELESAI
@@ -103,4 +112,9 @@ enum Status {
   AKTIF
   HABIS
   NONAKTIF
+}
+
+enum UserTypeEnum{
+  CUSTOMER
+  ADMIN
 }

@@ -118,7 +118,7 @@ describe("GET /api/products/[id]", () => {
     it("returns the product when it exists", async () => {
         prismaMock.product.findFirst.mockResolvedValue(sampleProducts[0]);
 
-        const response = await GET_BY_ID(Promise.resolve({ id: "1" }) as any);
+        const response = await GET_BY_ID({} as any, { params: Promise.resolve({ id: "1" }) } as any);
 
         expect(response.status).toBe(200);
         const body = await response.json();
@@ -129,7 +129,7 @@ describe("GET /api/products/[id]", () => {
     it("returns 404 when product not found", async () => {
         prismaMock.product.findFirst.mockResolvedValue(null);
 
-        const response = await GET_BY_ID(Promise.resolve({ id: "99" }) as any);
+        const response = await GET_BY_ID({} as any, { params: Promise.resolve({ id: "99" }) } as any);
 
         expect(response.status).toBe(404);
     });
@@ -228,7 +228,7 @@ describe("PUT /api/products/[id]/update", () => {
 
         const response = await PUT(
             buildBodyRequest({ price: 20000 }, "/1/update", "PUT"),
-            Promise.resolve({ id: "1" }) as any,
+            { params: Promise.resolve({ id: "1" }) } as any,
         );
 
         expect(response.status).toBe(200);
@@ -242,7 +242,7 @@ describe("PUT /api/products/[id]/update", () => {
 
         const response = await PUT(
             buildBodyRequest({ price: 20000 }, "/99/update", "PUT"),
-            Promise.resolve({ id: "99" }) as any,
+            { params: Promise.resolve({ id: "99" }) } as any,
         );
 
         expect(response.status).toBe(404);
@@ -254,7 +254,7 @@ describe("DELETE /api/products/[id]/delete", () => {
         prismaMock.product.findFirst.mockResolvedValue(sampleProducts[0]);
         prismaMock.product.delete.mockResolvedValue(sampleProducts[0]);
 
-        const response = await DELETE(Promise.resolve({ id: "1" }) as any);
+        const response = await DELETE({} as any, { params: Promise.resolve({ id: "1" }) } as any);
 
         expect(response.status).toBe(200);
         const body = await response.json();
@@ -265,7 +265,7 @@ describe("DELETE /api/products/[id]/delete", () => {
     it("returns 404 when product not found", async () => {
         prismaMock.product.findFirst.mockResolvedValue(null);
 
-        const response = await DELETE(Promise.resolve({ id: "99" }) as any);
+        const response = await DELETE({} as any, { params: Promise.resolve({ id: "99" }) } as any);
 
         expect(response.status).toBe(404);
     });

@@ -14,7 +14,7 @@ export async function getOrders() {
 }
 
 export async function deleteOrder(id: string) {
-  return prisma.order.delete({ where: { id } });
+  return prisma.order.delete({ where: { id: Number(id) } });
 }
 
 

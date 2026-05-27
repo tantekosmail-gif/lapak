@@ -4,10 +4,11 @@ import { prisma } from "../lib/prisma";
 
 export async function getProducts() {
   return prisma.product.findMany({
+    include: { category: true },
     orderBy: { createdAt: "desc" },
   });
 }
 
 export async function deleteProduct(id: string) {
-  return prisma.product.delete({ where: { id } });
+  return prisma.product.delete({ where: { id: Number(id) } });
 }
