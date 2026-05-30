@@ -8,7 +8,7 @@ import {
     UpdateProductDto,
     updateProductSchema,
 } from "../dto/Product.dto";
-import { ProductEntity, ProductWithCategory } from "../entities/Product";
+import { ProductDetail, ProductEntity, ProductWithCategory } from "../entities/Product";
 import { productRepository, ProductRepository } from "../repositories/ProductRepository";
 import { Paginations } from "../statics/Paginations";
 
@@ -42,6 +42,28 @@ export class ProductService extends BaseService<ProductRepository> {
                 orderBy: { [sortBy]: sortDir },
             });
             return this.ok(products);
+        } catch (error) {
+            return this.wrapError(error, "PRODUCT_FIND_FAILED");
+        }
+    }
+
+    /**
+     * Detail produk berdasarkan slug (unique di DB), beserta gambar &
+     * kategori. Dipakai halaman storefront `/toko/produk/[slug]`.
+     */
+    async findBySlug(slug: string): Promise<Response<ProductDetail>> {
+        try {
+            const product = await prisma.product.findUnique({
+                where: { slug },
+                include: {
+                    category: true,
+                    images: { orderBy: [{ isPrimary: "desc" }, { sortOrder: "asc" }] },
+                },
+            });
+            if (!product) {
+                return this.fail("PRODUCT_NOT_FOUND", `Product slug "${slug}" not found`);
+            }
+            return this.ok(product);
         } catch (error) {
             return this.wrapError(error, "PRODUCT_FIND_FAILED");
         }
