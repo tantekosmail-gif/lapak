@@ -16,16 +16,18 @@ model User {
   createdAt       DateTime  @default(now()) @map("created_at")
   userType        UserTypeEnum @default(CUSTOMER) @map("user_type")
   orders          Order[]
+  ratings         Rating[]
   @@map("users")
 }
 
 
 model ProductCategories {
-  id        Int      @id @default(autoincrement())
-  name      String
-  image     String?
-  createdAt DateTime @default(now()) @map("created_at")
-  products  Product[]
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String?
+  image       String?
+  createdAt   DateTime  @default(now()) @map("created_at")
+  products    Product[]
   @@map("product_categories")
 }
 
@@ -47,8 +49,27 @@ model Product {
 
   images     ProductImage[]
   orderItems OrderItem[]
+  ratings    Rating[]
 
   @@map("products")
+}
+
+model Rating {
+  id        Int      @id @default(autoincrement())
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  productId Int     @map("product_id")
+  userId    Int     @map("user_id")
+
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Satu user hanya boleh satu rating per produk (upsert by composite key).
+  @@unique([userId, productId])
+  @@map("ratings")
 }
 
 model ProductImage {

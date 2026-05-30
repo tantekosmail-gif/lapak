@@ -8,7 +8,7 @@ import {
     UpdateProductDto,
     updateProductSchema,
 } from "../dto/Product.dto";
-import { ProductEntity } from "../entities/Product";
+import { ProductEntity, ProductWithCategory } from "../entities/Product";
 import { productRepository, ProductRepository } from "../repositories/ProductRepository";
 import { Paginations } from "../statics/Paginations";
 
@@ -47,9 +47,12 @@ export class ProductService extends BaseService<ProductRepository> {
         }
     }
 
-    async findById(id: string): Promise<Response<ProductEntity>> {
+    async findById(id: string): Promise<Response<ProductWithCategory>> {
         try {
-            const product = await this.repository.findById(Number(id));
+            const product = await prisma.product.findUnique({
+                where: { id: Number(id) },
+                include: { category: true },
+            });
             if (product === null) {
                 return this.wrapError(new Error("Product not found"), "PRODUCT_NOT_FOUND");
             }

@@ -21,3 +21,10 @@ export async function requireAdmin(): Promise<SessionUser | null> {
   if (!user || user.userType !== "ADMIN") return null;
   return user;
 }
+
+/** Pengguna yang login dengan role CUSTOMER, atau null kalau bukan customer/anonim. */
+export async function requireCustomer(): Promise<SessionUser | null> {
+  const user = await currentUser();
+  if (!user || user.userType !== "CUSTOMER") return null;
+  return user;
+}

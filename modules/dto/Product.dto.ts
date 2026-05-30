@@ -9,7 +9,9 @@ export const createProductSchema = z.object({
     regular_price: z.number().int().nonnegative(),
     stock: z.number().int().nonnegative().optional(),
     sold: z.number().int().nonnegative().optional(),
-    imageUrl: z.string().url().optional(),
+    // Terima URL absolut (https://...) atau path internal (`/uploads/...`)
+    // yang dihasilkan UploadService.
+    imageUrl: z.string().min(1).optional(),
     status: productStatusEnum.optional(),
     slug: z.string().min(1).optional(),
     categoryId: z.number().int().positive().optional(),

@@ -5,12 +5,17 @@ import { useRouter } from "next/navigation";
 import { ShoppingCart, Menu, X, User, LogOut, Search } from "lucide-react";
 import { useCart } from "../lib/cart-context";
 import { useState, FormEvent } from "react";
+import { useSession } from "next-auth/react";
 
 export function StoreHeader() {
   const { totalItems } = useCart();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
+  const { data: session, status } = useSession();
+  const isAuthed = status === "authenticated" && !!session?.user;
+  const displayName =
+    session?.user?.name?.split(" ")[0] ?? session?.user?.email ?? "Akun";
 
   function handleSearch(e: FormEvent) {
     e.preventDefault();
@@ -83,12 +88,23 @@ export function StoreHeader() {
           </Link>
 
           <div className="hidden md:flex items-center gap-2">
-            <Link
-              href="/signin"
-              className="rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-on-primary hover:bg-primary-active active:bg-primary-active transition-colors"
-            >
-              Masuk
-            </Link>
+            {isAuthed ? (
+              <Link
+                href="/profile"
+                className="flex items-center gap-2 rounded-lg border border-hairline bg-canvas px-4 py-2 text-sm font-medium text-ink hover:bg-surface-soft transition-colors"
+                aria-label={`Akun ${displayName}`}
+              >
+                <User className="h-4 w-4" />
+                <span className="max-w-[120px] truncate">{displayName}</span>
+              </Link>
+            ) : (
+              <Link
+                href="/signin"
+                className="rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-on-primary hover:bg-primary-active active:bg-primary-active transition-colors"
+              >
+                Masuk
+              </Link>
+            )}
           </div>
 
           {/* Mobile hamburger */}
@@ -153,13 +169,24 @@ export function StoreHeader() {
               Profil
             </Link>
             <hr className="border-hairline my-2" />
-            <Link
-              href="/signin"
-              onClick={() => setMobileOpen(false)}
-              className="block rounded-lg bg-primary px-4 py-3 text-sm font-medium text-on-primary text-center"
-            >
-              Masuk dengan Google
-            </Link>
+            {isAuthed ? (
+              <Link
+                href="/profile"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center justify-center gap-2 rounded-lg border border-hairline px-4 py-3 text-sm font-medium text-ink"
+              >
+                <User className="h-4 w-4" />
+                <span className="truncate">{displayName}</span>
+              </Link>
+            ) : (
+              <Link
+                href="/signin"
+                onClick={() => setMobileOpen(false)}
+                className="block rounded-lg bg-primary px-4 py-3 text-sm font-medium text-on-primary text-center"
+              >
+                Masuk dengan Google
+              </Link>
+            )}
           </nav>
         </div>
       )}
