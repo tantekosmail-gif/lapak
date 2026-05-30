@@ -6,7 +6,7 @@ export async function GET(
     context: { params: Promise<{ id: string }> },
 ) {
     const { id } = await context.params;
-    const result = await productCategoryService.findById(id);
+    const result = await productCategoryService.findByIdWithProducts(id);
     if (!result.success) {
         return NextResponse.json({ data: null, message: result.error }, { status: 404 })
     }
@@ -20,7 +20,8 @@ export async function DELETE(
     const { id } = await context.params;
     const result = await productCategoryService.delete(id);
     if (!result.success) {
-        return NextResponse.json({ data: null, message: result.error }, { status: 404 })
+        const status = result.error.code === "CATEGORY_HAS_PRODUCTS" ? 409 : 404;
+        return NextResponse.json({ data: null, message: result.error }, { status });
     }
     return NextResponse.json({ ...result }, { status: 200 });
 }

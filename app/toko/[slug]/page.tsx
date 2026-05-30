@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Search,
   SlidersHorizontal,
@@ -11,10 +12,13 @@ import {
   Star,
   Heart,
 } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { StoreHeader } from "../../components/Header";
 import { Footer } from "../../components/Footer";
 import { useCart } from "../../lib/cart-context";
 import { toast } from "sonner";
+import { apiGet } from "@/app/lib/fetch";
+import type { ProductCategoryWithProducts } from "@/modules/entities/ProductCategories";
 
 function formatRupiah(value: number): string {
   return new Intl.NumberFormat("id-ID", {
@@ -24,92 +28,97 @@ function formatRupiah(value: number): string {
   }).format(value);
 }
 
-const allProducts = [
-  {
-    id: "prod-1", name: "Batik Tulis Solo Motif Parang Kusuma", slug: "batik-tulis-solo-parang-kusuma",
-    price: 450000, originalPrice: 550000,
-    image: "https://images.pexels.com/photos/6044266/pexels-photo-6044266.jpeg?auto=compress&cs=tinysrgb&w=600",
-    category: "batik-tulis", rating: 4.8, sold: 230, stock: 15,
-  },
-  {
-    id: "prod-2", name: "Batik Cap Pekalongan Motif Mega Mendung", slug: "batik-cap-pekalongan-mega-mendung",
-    price: 285000, originalPrice: 320000,
-    image: "https://images.pexels.com/photos/6044198/pexels-photo-6044198.jpeg?auto=compress&cs=tinysrgb&w=600",
-    category: "batik-cap", rating: 4.6, sold: 89, stock: 22,
-  },
-  {
-    id: "prod-3", name: "Batik Tulis Yogyakarta Motif Kawung", slug: "batik-tulis-yogya-kawung",
-    price: 520000,
-    image: "https://images.pexels.com/photos/6044268/pexels-photo-6044268.jpeg?auto=compress&cs=tinysrgb&w=600",
-    category: "batik-tulis", rating: 4.9, sold: 156, stock: 8,
-  },
-  {
-    id: "prod-4", name: "Batik Print Modern Motif Geometris", slug: "batik-print-modern-geometris",
-    price: 150000,
-    image: "https://images.pexels.com/photos/3738088/pexels-photo-3738088.jpeg?auto=compress&cs=tinysrgb&w=600",
-    category: "batik-print", rating: 4.3, sold: 312, stock: 45,
-  },
-  {
-    id: "prod-5", name: "Batik Tulis Madura Motif Pesisir", slug: "batik-tulis-madura-pesisir",
-    price: 380000, originalPrice: 420000,
-    image: "https://images.pexels.com/photos/6044266/pexels-photo-6044266.jpeg?auto=compress&cs=tinysrgb&w=600",
-    category: "batik-tulis", rating: 4.7, sold: 67, stock: 12,
-  },
-  {
-    id: "prod-6", name: "Gelang Batik Kayu Jati", slug: "gelang-batik-kayu-jati",
-    price: 75000,
-    image: "https://images.pexels.com/photos/6044198/pexels-photo-6044198.jpeg?auto=compress&cs=tinysrgb&w=600",
-    category: "aksesoris", rating: 4.5, sold: 198, stock: 50,
-  },
-  {
-    id: "prod-7", name: "Batik Cap Solo Motif Sogan", slug: "batik-cap-solo-motif-sogan",
-    price: 310000,
-    image: "https://images.pexels.com/photos/6044268/pexels-photo-6044268.jpeg?auto=compress&cs=tinysrgb&w=600",
-    category: "batik-cap", rating: 4.8, sold: 112, stock: 18,
-  },
-  {
-    id: "prod-8", name: "Broshi Batik Tie Dye", slug: "broshi-batik-tie-dye",
-    price: 45000,
-    image: "https://images.pexels.com/photos/3738088/pexels-photo-3738088.jpeg?auto=compress&cs=tinysrgb&w=600",
-    category: "aksesoris", rating: 4.4, sold: 276, stock: 80,
-  },
-];
-
-const categoryNames: Record<string, string> = {
-  "batik-tulis": "Batik Tulis",
-  "batik-cap": "Batik Cap",
-  "batik-print": "Batik Print",
-  "aksesoris": "Aksesoris",
-  "pakaian": "Pakaian",
-  "souvenir": "Souvenir",
+// Bentuk produk yang dipakai UI (mengikuti shape lama agar desain tidak berubah).
+type UIProduct = {
+  id: number;
+  name: string;
+  slug: string;
+  price: number;
+  originalPrice?: number;
+  image: string;
+  sold: number;
+  stock: number;
+  rating: number;
 };
 
-export default function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
+const sortLabels: Record<string, string> = {
+  popular: "Terpopuler",
+  "price-low": "Harga Terendah",
+  "price-high": "Harga Tertinggi",
+  newest: "Terbaru",
+};
+
+export default function CategoryPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = use(params);
+
+  const router = useRouter();
+  const pathname = usePathname();
+  const { data: session, status } = useSession();
+  const { addItem } = useCart();
+
+  const [categoryName, setCategoryName] = useState<string>(slug);
+  const [products, setProducts] = useState<UIProduct[]>([]);
+  const [loading, setLoading] = useState(true);
+
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("popular");
   const [showSortMenu, setShowSortMenu] = useState(false);
-  const [wishlisted, setWishlisted] = useState<Set<string>>(new Set());
-  const { addItem } = useCart();
+  const [wishlisted, setWishlisted] = useState<Set<number>>(new Set());
 
-  // For Next.js 16, params is a Promise — we'll use a simple approach
-  // In real app, use React.use() to unwrap params
-  const slug = "batik-tulis"; // default for static UI
-  const categoryName = categoryNames[slug] || slug;
+  useEffect(() => {
+    void (async () => {
+      setLoading(true);
+      const res = await apiGet<ProductCategoryWithProducts>(
+        `/api/public/product-categories/${slug}`,
+      );
+      if (!res.success) {
+        toast.error(`Gagal memuat kategori: ${res.error.message}`);
+        setLoading(false);
+        return;
+      }
+      setCategoryName(res.data.name);
+      // Mapping backend -> shape UI: harga normal masuk `originalPrice` hanya
+      // saat lebih besar dari harga jual (supaya diskon dihitung benar).
+      setProducts(
+        res.data.products.map((p) => ({
+          id: p.id,
+          name: p.name,
+          slug: p.slug,
+          price: p.price,
+          originalPrice:
+            p.regular_price > p.price ? p.regular_price : undefined,
+          image: p.imageUrl ?? "",
+          sold: p.sold,
+          stock: p.stock,
+          rating: 0,
+        })),
+      );
+      setLoading(false);
+    })();
+  }, [slug]);
 
-  const filteredProducts = allProducts
-    .filter((p) => p.category === slug)
-    .filter((p) => p.name.toLowerCase().includes(searchQuery.toLowerCase()));
+  const filteredProducts = products.filter((p) =>
+    p.name.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
 
   const sortedProducts = [...filteredProducts].sort((a, b) => {
     switch (sortBy) {
-      case "price-low": return a.price - b.price;
-      case "price-high": return b.price - a.price;
-      case "newest": return 0;
-      default: return b.sold - a.sold;
+      case "price-low":
+        return a.price - b.price;
+      case "price-high":
+        return b.price - a.price;
+      case "newest":
+        return 0;
+      default:
+        return b.sold - a.sold;
     }
   });
 
-  const toggleWishlist = (id: string) => {
+  const toggleWishlist = (id: number) => {
     setWishlisted((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
@@ -118,9 +127,15 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
     });
   };
 
-  const handleAddToCart = (product: typeof allProducts[0]) => {
+  const handleAddToCart = (product: UIProduct) => {
+    // Belum login -> arahkan ke /signin dulu (cart tetap client-side).
+    if (status !== "authenticated" || !session?.user) {
+      toast.info("Login dulu untuk memasukkan produk ke keranjang");
+      router.push(`/signin?callbackUrl=${encodeURIComponent(pathname)}`);
+      return;
+    }
     addItem({
-      productId: product.id,
+      productId: String(product.id),
       name: product.name,
       price: product.price,
       image: product.image,
@@ -128,13 +143,6 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
       slug: product.slug,
     });
     toast.success("Ditambahkan ke keranjang");
-  };
-
-  const sortLabels: Record<string, string> = {
-    popular: "Terpopuler",
-    "price-low": "Harga Terendah",
-    "price-high": "Harga Tertinggi",
-    newest: "Terbaru",
   };
 
   return (
@@ -170,7 +178,9 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
 
         {/* Sort + count */}
         <div className="flex items-center justify-between">
-          <p className="text-sm text-muted">{sortedProducts.length} produk</p>
+          <p className="text-sm text-muted">
+            {loading ? "Memuat…" : `${sortedProducts.length} produk`}
+          </p>
           <div className="relative">
             <button
               onClick={() => setShowSortMenu(!showSortMenu)}
@@ -203,7 +213,9 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
 
         {/* Products Grid */}
         <div className="mt-6">
-          {sortedProducts.length === 0 ? (
+          {loading ? (
+            <div className="py-20 text-center text-sm text-muted">Memuat…</div>
+          ) : sortedProducts.length === 0 ? (
             <div className="py-20 text-center">
               <ShoppingBag className="mx-auto h-12 w-12 text-hairline" />
               <p className="mt-4 text-base font-medium text-ink">Produk tidak ditemukan</p>
@@ -212,6 +224,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
           ) : (
             <div className="grid gap-4 grid-cols-2 sm:gap-5 lg:grid-cols-4">
               {sortedProducts.map((product) => {
+                // Diskon dihitung dari harga jual vs harga coret (regular_price).
                 const discount = product.originalPrice
                   ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
                   : 0;
@@ -234,7 +247,9 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                         </span>
                       )}
                       <div className="relative aspect-[4/3] bg-surface-soft overflow-hidden">
-                        <Image src={product.image} alt={product.name} fill sizes="(max-width: 640px) 50vw, 25vw" className="object-cover group-hover:scale-105 transition-transform duration-500" />
+                        {product.image ? (
+                          <Image src={product.image} alt={product.name} fill sizes="(max-width: 640px) 50vw, 25vw" className="object-cover group-hover:scale-105 transition-transform duration-500" />
+                        ) : null}
                       </div>
                       <div className="p-4">
                         <h3 className="text-sm font-medium text-ink line-clamp-2 leading-snug min-h-[2.5rem]">{product.name}</h3>

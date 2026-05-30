@@ -66,7 +66,7 @@ describe("GET /api/public/products", () => {
             skip: 0,
             take: 10,
             where: undefined,
-            orderBy: { createdAt: "ASC" },
+            orderBy: { createdAt: "asc" },
         });
     });
 
@@ -82,7 +82,7 @@ describe("GET /api/public/products", () => {
             skip: 5,
             take: 5,
             where: undefined,
-            orderBy: { name: "DESC" },
+            orderBy: { name: "desc" },
         });
     });
 
@@ -96,7 +96,7 @@ describe("GET /api/public/products", () => {
             skip: 0,
             take: 10,
             where: { name: { contains: "kopi" } },
-            orderBy: { createdAt: "ASC" },
+            orderBy: { createdAt: "asc" },
         });
     });
 
@@ -118,7 +118,7 @@ describe("GET /api/public/products", () => {
 
 describe("GET /api/public/products/[id]", () => {
     it("returns the product when it exists", async () => {
-        prismaMock.product.findFirst.mockResolvedValue(sampleProducts[0]);
+        prismaMock.product.findUnique.mockResolvedValue(sampleProducts[0]);
 
         const response = await GET_BY_ID({} as any, { params: Promise.resolve({ id: "1" }) } as any);
 
@@ -129,7 +129,7 @@ describe("GET /api/public/products/[id]", () => {
     });
 
     it("returns 404 when product not found", async () => {
-        prismaMock.product.findFirst.mockResolvedValue(null);
+        prismaMock.product.findUnique.mockResolvedValue(null);
 
         const response = await GET_BY_ID({} as any, { params: Promise.resolve({ id: "99" }) } as any);
 

@@ -9,4 +9,8 @@ export default defineConfig({
   datasource: {
     url: env("DIRECT_URL"),
   },
+  migrations: {
+    // `npx prisma db seed` -> jalankan seed kategori via ts-node (CJS override).
+    seed: "npx ts-node --transpile-only --project prisma/tsconfig.seed.json prisma/categories.ts",
+  },
 });

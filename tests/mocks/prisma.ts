@@ -7,6 +7,7 @@ type PrismaDelegateMock = {
   upsert: jest.Mock;
   delete: jest.Mock;
   count: jest.Mock;
+  aggregate: jest.Mock;
 };
 
 export type PrismaMock = {
@@ -16,6 +17,7 @@ export type PrismaMock = {
   productImage: PrismaDelegateMock;
   order: PrismaDelegateMock;
   orderItem: PrismaDelegateMock;
+  rating: PrismaDelegateMock;
   $transaction: jest.Mock;
   $connect: jest.Mock;
   $disconnect: jest.Mock;
@@ -30,6 +32,7 @@ const createDelegateMock = (): PrismaDelegateMock => ({
   upsert: jest.fn(),
   delete: jest.fn(),
   count: jest.fn(),
+  aggregate: jest.fn(),
 });
 
 export const createPrismaMock = (): PrismaMock => ({
@@ -39,6 +42,7 @@ export const createPrismaMock = (): PrismaMock => ({
   productImage: createDelegateMock(),
   order: createDelegateMock(),
   orderItem: createDelegateMock(),
+  rating: createDelegateMock(),
   $transaction: jest.fn((arg) =>
     Array.isArray(arg) ? Promise.all(arg) : Promise.resolve(arg),
   ),

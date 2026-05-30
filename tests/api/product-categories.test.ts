@@ -48,7 +48,9 @@ describe("GET /api/product-categories", () => {
         expect(prismaMock.productCategories.findMany).toHaveBeenCalledWith({
             skip: 0,
             take: 10,
-            orderBy: { createdAt: "ASC" },
+            where: undefined,
+            orderBy: { createdAt: "asc" },
+            include: { _count: { select: { products: true } } },
         });
     });
 
@@ -67,7 +69,9 @@ describe("GET /api/product-categories", () => {
         expect(prismaMock.productCategories.findMany).toHaveBeenCalledWith({
             skip: 10,
             take: 5,
-            orderBy: { name: "DESC" },
+            where: undefined,
+            orderBy: { name: "desc" },
+            include: { _count: { select: { products: true } } },
         });
     });
 
@@ -105,6 +109,16 @@ describe("GET /api/product-categories", () => {
             image: "makanan.jpg",
         };
         const response = await POST(buildPostRequest(category));
+        expect(response.status).toBe(200);
+        const body = await response.json();
+        expect(body.success).toBe(true);
+    });
+
+    it("does not crash when the `sort` query param is absent (null)", async () => {
+        prismaMock.productCategories.findMany.mockResolvedValue([]);
+
+        const response = await GET(buildRequest()); // no ?sort=...
+
         expect(response.status).toBe(200);
         const body = await response.json();
         expect(body.success).toBe(true);
@@ -153,7 +167,13 @@ describe("GET /api/product-categories", () => {
         });
     });
 
-    it("can delete category by id", async () => {
+    it("can delete category by id when no products belong to it", async () => {
+        prismaMock.productCategories.findFirst.mockResolvedValue({
+            id: 1,
+            name: "a",
+            image: "a.jpg",
+        });
+        prismaMock.product.count.mockResolvedValue(0);
         prismaMock.productCategories.delete.mockResolvedValue({
             id: 1,
             name: "a",
@@ -161,6 +181,7 @@ describe("GET /api/product-categories", () => {
         });
         const prism = Promise.resolve({ id: "1" })
         const response = await DELETE({} as any, { params: prism } as any);
+        expect(response.status).toBe(200);
         const body = await response.json();
         expect(body.success).toBe(true);
         expect(body.data).toEqual({
@@ -168,5 +189,20 @@ describe("GET /api/product-categories", () => {
             name: "a",
             image: "a.jpg",
         });
+    });
+
+    it("returns 409 CATEGORY_HAS_PRODUCTS when the category still has products", async () => {
+        prismaMock.productCategories.findFirst.mockResolvedValue({
+            id: 1,
+            name: "a",
+            image: "a.jpg",
+        });
+        prismaMock.product.count.mockResolvedValue(3);
+        const prism = Promise.resolve({ id: "1" })
+        const response = await DELETE({} as any, { params: prism } as any);
+        expect(response.status).toBe(409);
+        const body = await response.json();
+        expect(body.message.code).toBe("CATEGORY_HAS_PRODUCTS");
+        expect(prismaMock.productCategories.delete).not.toHaveBeenCalled();
     });
 });

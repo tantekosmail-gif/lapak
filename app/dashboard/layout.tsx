@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Package, ShoppingCart, BarChart3, Settings, ArrowLeft, Menu, X } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingCart, BarChart3, Settings, ArrowLeft, Menu, X, Tag } from "lucide-react";
 import { useState } from "react";
 
 const sidebarLinks = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
   { href: "/dashboard/produk", label: "Produk", icon: Package },
+  { href: "/dashboard/kategori", label: "Kategori", icon: Tag },
   { href: "/dashboard/pesanan", label: "Pesanan", icon: ShoppingCart },
   { href: "/dashboard/statistik", label: "Statistik", icon: BarChart3 },
   { href: "/dashboard/pengaturan", label: "Pengaturan", icon: Settings },
