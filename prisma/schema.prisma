@@ -17,6 +17,7 @@ model User {
   userType        UserTypeEnum @default(CUSTOMER) @map("user_type")
   orders          Order[]
   ratings         Rating[]
+  carts           Cart[]
   @@map("users")
 }
 
@@ -50,8 +51,26 @@ model Product {
   images     ProductImage[]
   orderItems OrderItem[]
   ratings    Rating[]
+  carts      Cart[]
 
   @@map("products")
+}
+
+model Cart {
+  id         Int      @id @default(autoincrement())
+  qty        Int      @default(1)
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  customerId Int     @map("customer_id")
+  productId  Int     @map("product_id")
+
+  customer   User    @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  product    Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  // Satu user hanya boleh punya satu entri cart per produk.
+  @@unique([customerId, productId])
+  @@map("carts")
 }
 
 model Rating {
