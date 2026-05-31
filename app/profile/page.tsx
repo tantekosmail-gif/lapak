@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { User, Mail, Phone, MapPin, Package, Heart, Settings, LogOut, Store, Pencil } from "lucide-react";
+import { signOut } from "next-auth/react";
 import { StoreHeader } from "../components/Header";
 import { Footer } from "../components/Footer";
 
@@ -114,13 +115,14 @@ export default function ProfilePage() {
 
         {/* Logout */}
         <div className="mt-6">
-          <Link
-            href="/api/auth/signout"
-            className="flex items-center justify-center gap-2 rounded-xl border border-hairline py-3.5 text-sm font-medium text-primary hover:bg-surface-soft transition-colors"
+          <button
+            type="button"
+            onClick={() => signOut({ callbackUrl: "/" })}
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-hairline py-3.5 text-sm font-medium text-primary hover:bg-surface-soft transition-colors"
           >
             <LogOut className="h-4 w-4" />
             Keluar
-          </Link>
+          </button>
         </div>
       </section>
 

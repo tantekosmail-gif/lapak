@@ -4,12 +4,20 @@ import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, Package, Pencil, Trash2, Upload, X } from "lucide-react";
+import {
+  ArrowLeft,
+  Package,
+  Pencil,
+  Star,
+  Trash2,
+  Upload,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
-import { apiDelete, apiGet, apiPost, apiPut } from "@/app/lib/fetch";
-import type { ProductWithCategory } from "@/modules/entities/Product";
+import { apiDelete, apiGet, apiPatch, apiPost, apiPut } from "@/app/lib/fetch";
+import type { ProductDetail, ProductWithCategory } from "@/modules/entities/Product";
+import type { ProductImageEntity } from "@/modules/entities/ProductImage";
 import type { ProductCategoryEntity } from "@/modules/entities/ProductCategories";
-import type { UploadResult } from "@/modules/services/UploadService";
 
 function formatRupiah(value: number) {
   return new Intl.NumberFormat("id-ID", {
@@ -24,7 +32,7 @@ export default function ProdukDetailPage() {
   const router = useRouter();
   const id = params?.id;
 
-  const [product, setProduct] = useState<ProductWithCategory | null>(null);
+  const [product, setProduct] = useState<ProductDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -34,7 +42,7 @@ export default function ProdukDetailPage() {
   async function load() {
     if (!id) return;
     setLoading(true);
-    const res = await apiGet<ProductWithCategory>(`/api/public/products/${id}`);
+    const res = await apiGet<ProductDetail>(`/api/public/products/${id}`);
     if (res.success) {
       setProduct(res.data);
     } else {
@@ -48,28 +56,63 @@ export default function ProdukDetailPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  async function handleUpload(file: File) {
-    if (!id) return;
+  /**
+   * Attach satu/banyak file ke galeri produk via endpoint admin
+   * `/api/products/images/attach` (yang sudah memanggil API `/upload` di
+   * dalamnya). Gambar pertama ditandai primary jika produk belum punya
+   * gambar sama sekali — supaya `products.image_url` ikut terisi.
+   */
+  async function handleAttach(files: FileList) {
+    if (!id || !product) return;
     setUploading(true);
-    // Upload → URL → PUT update product imageUrl.
     const form = new FormData();
-    form.append("file", file);
-    const uploadRes = await apiPost<UploadResult>("/api/upload", form);
-    if (!uploadRes.success) {
-      setUploading(false);
-      toast.error(`Upload gagal: ${uploadRes.error.message}`);
-      return;
+    form.append("productId", id);
+    if (product.images.length === 0) {
+      form.append("isPrimary", "true");
     }
-    const putRes = await apiPut<ProductWithCategory>(
-      `/api/products/${id}/update`,
-      { imageUrl: uploadRes.data.url },
+    form.append(
+      "sortOrder",
+      String(product.images.length),
+    );
+    Array.from(files).forEach((f) => form.append("file", f));
+
+    const res = await apiPost<ProductImageEntity[]>(
+      "/api/products/images/attach",
+      form,
     );
     setUploading(false);
-    if (!putRes.success) {
-      toast.error(`Gagal memperbarui gambar: ${putRes.error.message}`);
+    if (!res.success) {
+      toast.error(`Upload gagal: ${res.error.message}`);
       return;
     }
-    toast.success("Gambar diperbarui");
+    toast.success(`${res.data.length} gambar terunggah`);
+    void load();
+  }
+
+  async function handleSetPrimary(imageId: number) {
+    if (!id) return;
+    const res = await apiPatch<ProductImageEntity>(
+      `/api/products/${id}/images/${imageId}/primary`,
+    );
+    if (!res.success) {
+      toast.error(`Gagal: ${res.error.message}`);
+      return;
+    }
+    toast.success("Gambar utama diperbarui");
+    void load();
+  }
+
+  async function handleDeleteImage(imageId: number) {
+    if (!confirm("Hapus gambar ini?")) return;
+    const res = await apiPost<{ deleted: number[] }>(
+      "/api/products/images/detach",
+      { ids: [imageId] },
+    );
+    if (!res.success) {
+      toast.error(`Gagal menghapus gambar: ${res.error.message}`);
+      return;
+    }
+    toast.success("Gambar dihapus");
     void load();
   }
 
@@ -125,25 +168,68 @@ export default function ProdukDetailPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
         <div className="space-y-3">
-          <div className="relative aspect-square overflow-hidden rounded-xl border border-hairline bg-surface-soft">
-            {product.imageUrl ? (
-              <Image src={product.imageUrl} alt={product.name} fill sizes="280px" className="object-cover" />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center">
+          {/* Galeri gambar produk — primary muncul di atas, di-mark dengan badge */}
+          <div className="grid grid-cols-2 gap-2">
+            {product.images.length === 0 && (
+              <div className="col-span-2 aspect-square flex items-center justify-center rounded-xl border border-hairline bg-surface-soft">
                 <Package className="h-12 w-12 text-muted-soft" />
               </div>
             )}
+            {product.images.map((img) => (
+              <div
+                key={img.id}
+                className={`relative aspect-square overflow-hidden rounded-lg border bg-surface-soft ${
+                  img.isPrimary ? "border-ink ring-2 ring-ink/10" : "border-hairline"
+                }`}
+              >
+                <Image
+                  src={img.url}
+                  alt={product.name}
+                  fill
+                  sizes="160px"
+                  className="object-cover"
+                />
+                {img.isPrimary && (
+                  <span className="absolute top-2 left-2 inline-flex items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-on-primary">
+                    <Star className="h-3 w-3 fill-current" />
+                    Utama
+                  </span>
+                )}
+                <div className="absolute top-2 right-2 flex flex-col gap-1">
+                  {!img.isPrimary && (
+                    <button
+                      onClick={() => void handleSetPrimary(img.id)}
+                      className="flex h-7 w-7 items-center justify-center rounded-full bg-canvas/90 backdrop-blur text-ink hover:bg-canvas border border-hairline"
+                      title="Jadikan gambar utama"
+                      aria-label="Jadikan gambar utama"
+                    >
+                      <Star className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                  <button
+                    onClick={() => void handleDeleteImage(img.id)}
+                    className="flex h-7 w-7 items-center justify-center rounded-full bg-canvas/90 backdrop-blur text-red-700 hover:bg-red-50 border border-hairline"
+                    title="Hapus gambar"
+                    aria-label="Hapus gambar"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
+
           <input
             ref={fileInputRef}
             type="file"
+            multiple
             accept="image/jpeg,image/png,image/webp,image/gif"
             className="hidden"
             onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) void handleUpload(file);
+              const files = e.target.files;
+              if (files && files.length > 0) void handleAttach(files);
               e.target.value = "";
             }}
           />
@@ -155,6 +241,10 @@ export default function ProdukDetailPage() {
             <Upload className="h-4 w-4" />
             {uploading ? "Mengunggah…" : "Upload Gambar"}
           </button>
+          <p className="text-xs text-muted">
+            Klik <Star className="inline h-3 w-3" /> untuk menjadikan gambar
+            utama (Product.image_url ikut menyesuaikan).
+          </p>
         </div>
 
         <div className="space-y-4 rounded-xl border border-hairline p-5">

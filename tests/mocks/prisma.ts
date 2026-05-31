@@ -4,6 +4,7 @@ type PrismaDelegateMock = {
   findMany: jest.Mock;
   create: jest.Mock;
   update: jest.Mock;
+  updateMany: jest.Mock;
   upsert: jest.Mock;
   delete: jest.Mock;
   deleteMany: jest.Mock;
@@ -31,6 +32,7 @@ const createDelegateMock = (): PrismaDelegateMock => ({
   findMany: jest.fn(),
   create: jest.fn(),
   update: jest.fn(),
+  updateMany: jest.fn(),
   upsert: jest.fn(),
   delete: jest.fn(),
   deleteMany: jest.fn(),

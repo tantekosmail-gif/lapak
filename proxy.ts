@@ -2,7 +2,10 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 
 // API yang butuh login DENGAN role ADMIN.
-const ADMIN_API_PREFIXES = ["/api/orders"];
+// `/api/products` di-cover di sini → save/saveAll/[id]/update/delete dan
+// /images/attach,detach,primary semuanya admin-only. Read publik lewat
+// `/api/public/products/*` yang prefix-nya berbeda dan tidak ikut tergerbang.
+const ADMIN_API_PREFIXES = ["/api/orders", "/api/products"];
 
 // API yang butuh login (role apa pun).
 const AUTHENTICATED_API_PREFIXES = [

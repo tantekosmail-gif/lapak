@@ -69,11 +69,14 @@ export class ProductService extends BaseService<ProductRepository> {
         }
     }
 
-    async findById(id: string): Promise<Response<ProductWithCategory>> {
+    async findById(id: string): Promise<Response<ProductDetail>> {
         try {
             const product = await prisma.product.findUnique({
                 where: { id: Number(id) },
-                include: { category: true },
+                include: {
+                    category: true,
+                    images: { orderBy: [{ isPrimary: "desc" }, { sortOrder: "asc" }] },
+                },
             });
             if (product === null) {
                 return this.wrapError(new Error("Product not found"), "PRODUCT_NOT_FOUND");
@@ -102,6 +105,18 @@ export class ProductService extends BaseService<ProductRepository> {
                 slug: data.slug ?? slugify(data.name),
                 category: data.categoryId ? { connect: { id: data.categoryId } } : undefined,
             });
+            // Default image juga di-simpan sebagai record ProductImage utama,
+            // sehingga relation `Product.images` konsisten sejak awal.
+            if (data.imageUrl) {
+                await prisma.productImage.create({
+                    data: {
+                        productId: product.id,
+                        url: data.imageUrl,
+                        isPrimary: true,
+                        sortOrder: 0,
+                    },
+                });
+            }
             return this.ok(product);
         } catch (error) {
             return this.wrapError(error, "PRODUCT_CREATE_FAILED");
@@ -179,6 +194,16 @@ export class ProductService extends BaseService<ProductRepository> {
                         category: { connect: { id: newCategory.id } },
                     },
                 });
+                if (product.imageUrl) {
+                    await tx.productImage.create({
+                        data: {
+                            productId: newProduct.id,
+                            url: product.imageUrl,
+                            isPrimary: true,
+                            sortOrder: 0,
+                        },
+                    });
+                }
                 return newProduct;
             });
             return this.ok(result);
