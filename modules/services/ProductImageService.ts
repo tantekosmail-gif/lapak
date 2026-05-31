@@ -1,3 +1,4 @@
+import { prisma } from "@/app/lib/prisma";
 import { BaseService, Response } from "../core";
 import { ProductImageEntity } from "../entities/ProductImage";
 import {
@@ -13,6 +14,12 @@ export type AttachOptions = {
     isPrimary?: boolean;
 };
 
+/**
+ * Mengelola galeri gambar produk. Invarian yang dijaga:
+ *  - paling banyak satu `ProductImage.isPrimary = true` per produk;
+ *  - `Product.imageUrl` selalu mencerminkan URL primary terkini (atau
+ *    `null` kalau galeri kosong).
+ */
 export class ProductImageService extends BaseService<ProductImageRepository> {
     constructor(
         repository: ProductImageRepository = productImageRepository,
@@ -43,6 +50,7 @@ export class ProductImageService extends BaseService<ProductImageRepository> {
 
         try {
             let offset = options.sortOrder ?? 0;
+            const firstSortOrder = offset;
             for (const file of files) {
                 const upload = await this.uploader.saveImage(file);
                 if (!upload.success) {
@@ -54,12 +62,27 @@ export class ProductImageService extends BaseService<ProductImageRepository> {
                 const record = await this.repository.create({
                     url: upload.data.url,
                     sortOrder: offset,
-                    isPrimary: offset === (options.sortOrder ?? 0) ? options.isPrimary ?? false : false,
+                    // Hanya file pertama yang berpotensi jadi primary, sesuai input.
+                    isPrimary: offset === firstSortOrder ? options.isPrimary ?? false : false,
                     product: { connect: { id: options.productId } },
                 });
                 created.push(record);
                 offset += 1;
             }
+
+            // Sinkronkan Product.imageUrl bila ada primary yang baru di-attach.
+            const newPrimary = created.find((r) => r.isPrimary);
+            if (newPrimary) {
+                await prisma.productImage.updateMany({
+                    where: { productId: options.productId, id: { not: newPrimary.id } },
+                    data: { isPrimary: false },
+                });
+                await prisma.product.update({
+                    where: { id: options.productId },
+                    data: { imageUrl: newPrimary.url },
+                });
+            }
+
             return this.ok(created);
         } catch (error) {
             await this.rollback(uploaded, created);
@@ -84,9 +107,76 @@ export class ProductImageService extends BaseService<ProductImageRepository> {
                 await this.uploader.deleteByUrl(image.url);
                 deleted.push(image.id);
             }
+
+            // Untuk tiap produk yang kehilangan primary-nya: promosikan kandidat
+            // berikutnya (sortOrder terkecil) atau kosongkan `Product.imageUrl`.
+            const orphanedProductIds = Array.from(
+                new Set(images.filter((i) => i.isPrimary).map((i) => i.productId)),
+            );
+            for (const productId of orphanedProductIds) {
+                const next = await prisma.productImage.findFirst({
+                    where: { productId },
+                    orderBy: [{ sortOrder: "asc" }, { id: "asc" }],
+                });
+                if (next) {
+                    await prisma.productImage.update({
+                        where: { id: next.id },
+                        data: { isPrimary: true },
+                    });
+                    await prisma.product.update({
+                        where: { id: productId },
+                        data: { imageUrl: next.url },
+                    });
+                } else {
+                    await prisma.product.update({
+                        where: { id: productId },
+                        data: { imageUrl: null },
+                    });
+                }
+            }
+
             return this.ok({ deleted });
         } catch (error) {
             return this.wrapError(error, "PRODUCT_IMAGE_DETACH_FAILED");
+        }
+    }
+
+    /**
+     * Menetapkan satu `ProductImage` sebagai primary; sekaligus menurunkan
+     * primary lama (kalau ada) dan menyamakan `Product.imageUrl` dengan URL
+     * gambar yang dipilih.
+     */
+    async setPrimary(
+        productId: number,
+        imageId: number,
+    ): Promise<Response<ProductImageEntity>> {
+        try {
+            const image = await prisma.productImage.findFirst({
+                where: { id: imageId, productId },
+            });
+            if (!image) {
+                return this.fail(
+                    "PRODUCT_IMAGE_NOT_FOUND",
+                    `Image ${imageId} not in product ${productId}`,
+                );
+            }
+            await prisma.$transaction([
+                prisma.productImage.updateMany({
+                    where: { productId, id: { not: imageId } },
+                    data: { isPrimary: false },
+                }),
+                prisma.productImage.update({
+                    where: { id: imageId },
+                    data: { isPrimary: true },
+                }),
+                prisma.product.update({
+                    where: { id: productId },
+                    data: { imageUrl: image.url },
+                }),
+            ]);
+            return this.ok({ ...image, isPrimary: true });
+        } catch (error) {
+            return this.wrapError(error, "PRODUCT_IMAGE_SET_PRIMARY_FAILED");
         }
     }
 

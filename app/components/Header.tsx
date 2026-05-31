@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { ShoppingCart, Menu, X, User, LogOut, Search } from "lucide-react";
 import { useCart } from "../lib/cart-context";
 import { useState, FormEvent } from "react";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 
 export function StoreHeader() {
   const { totalItems } = useCart();
@@ -246,12 +246,14 @@ export function CustomerHeader() {
             >
               <User className="h-5 w-5 text-ink" />
             </Link>
-            <Link
-              href="/api/auth/signout"
+            <button
+              type="button"
+              onClick={() => signOut({ callbackUrl: "/" })}
+              aria-label="Keluar"
               className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-surface-soft transition-colors"
             >
               <LogOut className="h-5 w-5 text-ink" />
-            </Link>
+            </button>
           </div>
 
           <button
@@ -307,12 +309,16 @@ export function CustomerHeader() {
               Keranjang {totalItems > 0 && `(${totalItems})`}
             </Link>
             <hr className="border-hairline my-2" />
-            <Link
-              href="/api/auth/signout"
-              className="block rounded-lg px-4 py-3 text-sm font-medium text-primary hover:bg-surface-soft transition-colors"
+            <button
+              type="button"
+              onClick={() => {
+                setMobileOpen(false);
+                signOut({ callbackUrl: "/" });
+              }}
+              className="block w-full rounded-lg px-4 py-3 text-left text-sm font-medium text-primary hover:bg-surface-soft transition-colors"
             >
               Keluar
-            </Link>
+            </button>
           </nav>
         </div>
       )}
