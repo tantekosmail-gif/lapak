@@ -134,6 +134,18 @@ model OrderItem {
   @@map("order_items")
 }
 
+model Regions{
+  id Int @id 
+  nationalProvinceCode String @map("national_province_code")
+  provinceName String @map("province_name)
+  nationalRegencyCode String @map("national_regency_code")
+  regencyName String @map("regency_name")
+  nationalDistrictCode String @map("national_district_code")
+  districtName String @map("district_name") 
+}
+
+model PostalCodes
+
 model StoreConfiguration{
   id Int @id @default(autoincrement())
   settings Json @default("{}")  
